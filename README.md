@@ -11,6 +11,7 @@ See HISTORY for a summary of changes since the last released version.
   To resolve these issues, and to make this language distinct from Lua, the following changes were made:
 
   * There are no reserved words. All language syntax is symbolic.
+  * All expressions are statements. No exceptions.
   * Logic operators are `&,|,!` for "and, or, not", respectively.
   * Not-equals operator is `!=`.
   * Local variables are declared with prefix `@`: `@a, b = 1, 2`
@@ -21,10 +22,10 @@ See HISTORY for a summary of changes since the last released version.
   * Tables are indexed with `.field` or `.(expression)`. The latter replaces square bracket indexing.
   * While loops are `? condition -> (body)`, and are expressions.
     * While loops evaluate to nil by default.
-    * If break is used in the loop, a single value can be placed after the break, and the loop will evaluate to that value: `?1(a & ^^7) -- loop evaluates to 7 if a is true, otherwise nil`
+    * If break is used in the loop, a single value can be placed after the break, and the loop will evaluate to that value: `?1->(a & ^^7) -- loop evaluates to 7 if a is true, otherwise nil`
   * Blocks are `(code)`, and are expressions.
     * Sub-expressions (`(expression)`) no longer exist, with block expressions as the replacement.
-    * The last statement in a block, if not followed by a semicolon, will have its value returned: `3*(print(); 2+1)` returns 9. This allows blocks to take the place of sub-expressions seamlessly while retaining their ability to execute multiple lines of code.
+    * The last statement in a block, if not followed by a semicolon, will have its value returned, e.g. `3*(print(); 2+1)` returns 9. This allows blocks to take the place of sub-expressions seamlessly while retaining their ability to execute multiple lines of code.
     * An empty block `()`, or any block which returns no values, evaluates to true. This ensures ternary expressions work as expected: `condition & (true_code;) | (false_code;)`.
     * Blocks can return multiple values when used as the last argument in a function call or return statement: `io.write(1,2,(3,4))` prints "1234". If, in this case, the block would return no values, it returns a single true boolean.
     * In a block, if the last expression is varargs (`...`) or a function call, that expression will only return one value. The number of return values for a block must be known at compile time.
