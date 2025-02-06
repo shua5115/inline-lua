@@ -4,7 +4,7 @@
 ** See Copyright Notice in lua.h
 */
 
-
+#include <stdio.h> // TODO REMOVE!!!
 #include <stdlib.h>
 
 #define lcode_c
@@ -300,6 +300,44 @@ void luaK_setoneret (FuncState *fs, expdesc *e) {
   }
 }
 
+// Returns the number of registers filled, starting from fs->freereg at time of call.
+// Reserves n registers, so the original freereg is: `fs->freereg-returnval`
+int luaK_blockresults2regs(FuncState *fs, expdesc *e, int nresults) {
+  int i, n;
+  lua_assert(e->k == VBLOCK);
+  if (nresults == LUA_MULTRET) {
+    n = e->u.s.aux - e->u.s.info; // set number of results to number of values available
+    if (n <= 0) {
+      e->u.s.aux = e->u.s.info; // enforce end condition
+      n = 1;
+    }
+  } else if (nresults <= 0) {
+    return 0;
+  } else {
+    n = nresults;
+  }
+  for(i = 0; i < n; i++) {
+    int sourcereg = e->u.s.info + i;
+    int targetreg = fs->freereg + i;
+    if (sourcereg >= e->u.s.aux) { // there are no more value to return, so fill rest with nil
+      // printf("nil from blockresults2regs\n");
+      luaK_nil(fs, targetreg, n-i);
+      break;
+    } else if (sourcereg != targetreg) {
+      // printf("move in blockresults2regs\n");
+      luaK_codeABC(fs, OP_MOVE, targetreg, sourcereg, 0);
+    }
+  }
+
+  luaK_reserveregs(fs, n);
+  // if (nresults == LUA_MULTRET) {
+  //   // increment freereg by the number of added variables
+  // } else {
+  //   luaK_reserveregs(fs, 1); // remaining n-1 reserved by caller
+  // }
+  return n;
+}
+
 
 void luaK_dischargevars (FuncState *fs, expdesc *e) {
   switch (e->k) {
@@ -367,6 +405,18 @@ static void discharge2reg (FuncState *fs, expdesc *e, int reg) {
     case VNONRELOC: {
       if (reg != e->u.s.info)
         luaK_codeABC(fs, OP_MOVE, reg, e->u.s.info, 0);
+      break;
+    }
+    case VBLOCK: {
+      // if there is at least one returned value, then try to move the value there, otherwise push nil
+      if (e->u.s.info < e->u.s.aux) {
+        // if desired register and start of block return values are not the same, then move the value
+        // printf("move in discharge2reg\n");
+        if (reg != e->u.s.info) luaK_codeABC(fs, OP_MOVE, reg, e->u.s.info, 0);
+      } else {
+        // printf("nil from discharge2reg\n");
+        luaK_nil(fs, reg, 1);
+      }
       break;
     }
     default: {

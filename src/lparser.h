@@ -31,7 +31,8 @@ typedef enum {
   VRELOCABLE,	/* info = instruction pc */
   VNONRELOC,	/* info = result register */
   VCALL,	/* info = instruction pc */
-  VVARARG	/* info = instruction pc */
+  VVARARG,	/* info = instruction pc */
+  VBLOCK /* info = start register of returns, aux = block freereg (end of returns) */
 } expkind;
 
 typedef struct expdesc {

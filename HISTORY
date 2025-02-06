@@ -1,4 +1,135 @@
-HISTORY for Lua 5.1
+HISTORY for Inline, based on Lua 5.1.5
+
+* Changes from lua 5.1.5
+  -------------------------------
+  Per File:
+  
+  ### Makefile(s):
+  * Renamed interpreter from `lua` to `inlua`
+  * Renamed compiler from `luac` to `inluac`
+  * Repeated the above where necessary.
+
+  ### llex.h:
+  * Removed all token types associated with reserved words.
+  * Added TK_ARROW: `->`
+  * Set NUM_RESERVED to 0, all reserved words have been removed.
+
+  ### llex.c:
+  * `luaX_tokens`
+    * Removed all reserved words
+    * Changed token for break to `^^`
+    * Added arrow token: `->`
+  * `read_numeral`
+    * Skips over underscores to allow numerical constants to be more readable (e.g. `100_000_000` for one hundred million)
+  * `llex`
+    * Added logic to parse TK_ARROW `->`
+    * Added logic to distinguish not and not equal (`!` vs `!=`)
+    * Removed logic to parse nil and not equal, since they are now distinct.
+    * Added logic to distinguish carat and break (`^` vs `^^`)
+
+  ### lparser.h:
+  * `expkind`
+    * Added `VBLOCK` expression to represent blocks which potentially leave multiple values on the stack.
+
+  ### lparser.c:
+  * `BlockCnt`: Storing previous freereg, preserving the entire stack state.
+  * `searchvar`: Added check to skip over unregistered "active" variables. Unregistered active variables are needed to prevent stack clobbering with block expressions.
+  * `adjust_assign`: If final expression in the assignment is a block, treat it the same as a VOID expression to avoid overwriting stack.
+  * `enterblock`: Changed to allow for block expressions to function properly with the stack.
+    * Inner block's `freereg` is set to current stack `freereg`
+    * Sets all active variable slots between current stack `nactvar` and `freereg` to be explicitly unregistered. Works with `searchvar` to avoid badness.
+    * Current stack `nactvar` becomes `freereg`, so any local variables in the new block will not overwrite previous temporaries.
+  * `leaveblock`: Changed signature to take an `expdesc*` argument. This argument is optional, and used to return a block expression.
+    * For regular blocks, "returned" values start at `fs->nactvar`, the current stack's first register for temporaries.
+    * For loop blocks, "returned" values start at `bl->freereg`, the previous stack's next free register for temporaries, and only one value can be returned.
+    * In many places, `bl->nactvar` was replaced with `bl->freereg`, since `bl->freereg` is the first register for locals within the block.
+    * `fs->nactvar` is explicitly set to `bl->nactvar`, since the call to removevars no longer does this implicitly.
+    * Added logic for creating the block expression
+    * Setting `fs->freereg` to `bl->freereg` instead of `fs->nactvar`, in accordance with previous changes.
+  * Added function `eindex`, similar to `yindex`, for indexing with `()`: This is used when handling `table.(key)`
+  * `body`: changed grammar from `(parlist) chunk END` to `[parlist](chunk)`
+  * `explist1`: If a block is the last expression, place all block results on stack, adjusting number of expressions accordingly.
+  * `funcargs`:
+    * Removed ability to call functions without parentheses to increase clarity and consistency of code.
+    * Added logic: If a block is the last expression in the arguments list, do not add its results to the stack, since they are already there.
+  * `prefixexp`:
+    * Sub-expression `( expr )` changed to `( chunk )`. This is where block expressions start.
+    * Added while loop expression `? cond -> (chunk)`. This is also a block expression, but it behaves differently (see `leaveblock`).
+  * `primaryexp`:
+    * Added return `^` and break `^^` as primary expressions. They are both of type void, so they have no value. Since they interrupt control flow, their values would never be used anyway.
+    * Changed indexing from `table[key]` to `table.(key)`, adding logic to distinguish from field access (e.g. `table.field`)
+    * Removed ability to call functions without parentheses to increase clarity and consistency of code.
+  * `simpleexp`:
+    * Changed nil expression from `TK_NIL` to '~'
+    * Removed true and false expressions
+    * Changed function expression from `TK_FUNCTION (funcargs) chunk END` to `[funcargs] (chunk)`
+  * `getunopr`:
+    * Changed not operator from `TK_NOT` to '!'
+  * `getbinopr`:
+    * Changed and operator from `TK_AND` to `&`
+    * Changed or operator from `TK_OR` to `|`
+  * `blockfollow`: Changed so a block only ends with `)` or end of stream.
+    * Removed cases `TK_ELSE, TK_ELSEIF, TK_END, TK_UNTIL`
+    * Added case `)`
+  * `block`: Changed signature to take an `expdesc*` argument. This argument is optional, and used to return a block expression.
+  * Added function `abort_assignment_aux`, which handles executing expression list statements in the proper order.
+  * `assignment`: allows for expression statements without assignment.
+    * When aborting the assignment, all LHS expression results are stored in registers, in order of their creation.
+  * `breakstat`: Added logic for returning a single expression from a loop.
+  * `whilestat`: renamed to whileexpr
+  * `whileexpr`:
+    * Changed signature to take an `expdesc*` argument. This argument is optional, and used to return a block expression.
+    * Changed grammar from `WHILE cond DO block END` to `? cond -> (block)`
+    * Added logic to load a single nil value in case the loop ends normally.
+    * Swapped order of calls `luaK_patchtohere` and `leaveblock` to allow for loading the default nil value.
+  * Removed `repeatstat`
+  * Removed `exp1`
+  * Removed `forbody`
+  * Removed `fornum`
+  * Removed `forlist`
+  * Removed `forstat`
+  * Removed `test_then_block`
+  * Removed `ifstat`
+  * Removed `localfunc`
+  * `localstat`: Added logic to reset `freereg` after registering locals. This ensures proper register usage when locals are in a block expression.
+  * Removed `funcname`
+  * Removed `funcstat`
+  * `exprstat`:
+    * Changed call from `primaryexp` to `expr`, allowing for any expression to be in an expression statement.
+    * Removed logic for special handling of a function call expression. All expressions are now treated equally.
+  * `retstat`:
+    * Removed call to `luaX_next` to account for caller skipping RETURN token.
+    * Added logic: If a block is the last expression in the return list, do not add its results to the stack, since they are already there.
+  * `statement`:
+    * Removed if statement
+    * Changed while statement to start with `?` instead of `TK_WHILE`
+    * Removed block statement. Blocks are now expressions.
+    * Removed for loop statement
+    * Removed repeat-until statement
+    * Removed named (non-anonymous or local) function statement
+    * Changed local statement from `TK_LOCAL` to `@`
+    * Changed return statement to start with `^` instead of `TK_RETURN`, and skipped return token to match break statement.
+  * `chunk`:
+    * Added logic: if the last statement does not end with `;`, all temporary values in registers are not free'd. These values are then "stored" in a block expression.
+
+  ### lcode.h:
+  * Added function `luaK_blockresults2regs`: places all block expression results onto the stack in free registers.
+
+  ### lcode.c:
+  * Implemented `luaK_blockresults2regs`
+  * `discharge2reg`: added VBLOCK case which stores a single returned value or nil.
+
+  ### liolib.c:
+  * TODO add function io_popen2, which allows reading and writing from a child process by returning two files.
+
+  ### lstrlib.c:
+  * Renamed `createmetatable` to `registermetatable`, better describing the following changes:
+  * A string's metatable is now the string library table itself, not an intermediate table. This makes the __index metamethod faster.
+  * Changed `__index` metamethod of string metatable to a function. The function first checks if the string metatable contains the desired key, returning the result. If the key does not exist, then the string data is indexed with an integer using the following function:
+  * Added `at(str, index)` function to string library, which indexes a single character from a string, returning nil if out of range. The __index metamethod calls this function if the string library does not contain the desired key.
+
+  ### ltablib.c
+  * `addfield`: Removed indent from final expression to avoid compiler warning.
 
 * Changes from version 5.0 to 5.1
   -------------------------------

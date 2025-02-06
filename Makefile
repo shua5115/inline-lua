@@ -17,8 +17,8 @@ INSTALL_MAN= $(INSTALL_TOP)/man/man1
 #
 # You probably want to make INSTALL_LMOD and INSTALL_CMOD consistent with
 # LUA_ROOT, LUA_LDIR, and LUA_CDIR in luaconf.h (and also with etc/lua.pc).
-INSTALL_LMOD= $(INSTALL_TOP)/share/lua/$V
-INSTALL_CMOD= $(INSTALL_TOP)/lib/lua/$V
+INSTALL_LMOD= $(INSTALL_TOP)/share/inlua/$V
+INSTALL_CMOD= $(INSTALL_TOP)/lib/inlua/$V
 
 # How to install. If your install program does not support "-p", then you
 # may have to run ranlib on the installed liblua.a (do "make ranlib").
@@ -41,9 +41,9 @@ RANLIB= ranlib
 PLATS= aix ansi bsd freebsd generic linux macosx mingw posix solaris
 
 # What to install.
-TO_BIN= lua luac
+TO_BIN= inlua inluac
 TO_INC= lua.h luaconf.h lualib.h lauxlib.h ../etc/lua.hpp
-TO_LIB= liblua.a
+TO_LIB= libinlua.a
 TO_MAN= lua.1 luac.1
 
 # Lua version and release.
@@ -56,7 +56,7 @@ $(PLATS) clean:
 	cd src && $(MAKE) $@
 
 test:	dummy
-	src/lua test/hello.lua
+	src/inlua test/hello.lua
 
 install: dummy
 	cd src && $(MKDIR) $(INSTALL_BIN) $(INSTALL_INC) $(INSTALL_LIB) $(INSTALL_MAN) $(INSTALL_LMOD) $(INSTALL_CMOD)

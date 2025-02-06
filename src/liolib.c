@@ -180,6 +180,17 @@ static int io_popen (lua_State *L) {
 }
 
 
+static int io_popen2 (lua_State *L) {
+#if defined(LUA_USE_POSIX)
+  return 0; // TODO posix implementation
+#elif defined(LUA_WIN)
+  return 0; // TODO windows implementation
+#else
+  return luaL_error(L, LUA_QL("popen2") " not supported");
+#endif
+}
+
+
 static int io_tmpfile (lua_State *L) {
   FILE **pf = newfile(L);
   *pf = tmpfile();
@@ -485,6 +496,7 @@ static const luaL_Reg iolib[] = {
   {"open", io_open},
   {"output", io_output},
   {"popen", io_popen},
+  {"popen2", io_popen2},
   {"read", io_read},
   {"tmpfile", io_tmpfile},
   {"type", io_type},

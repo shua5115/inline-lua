@@ -53,6 +53,18 @@ static int str_sub (lua_State *L) {
   return 1;
 }
 
+static int str_index (lua_State *L) {
+  size_t l;
+  const char *s = luaL_checklstring(L, 1, &l);
+  if (l == 0) {
+    lua_pushliteral(L, "");
+    return 1;
+  }
+  ptrdiff_t idx = luaL_checkinteger(L, 2);
+  if (idx < 1 || idx > (ptrdiff_t)l) return 0;
+  lua_pushlstring(L, s+(idx-1), 1);
+  return 1;
+}
 
 static int str_reverse (lua_State *L) {
   size_t l;
@@ -824,6 +836,20 @@ static int str_format (lua_State *L) {
 }
 
 
+static int str_meta_index (lua_State *L) {
+  lua_getmetatable(L, 1); // get string library (a string's metatable)
+  lua_pushvalue(L, 2); // push key
+  lua_rawget(L, -2); // rawget(string library table, key)
+  if (lua_isnil(L, -1)) {
+    lua_pop(L, 2); // pop nil and string library table, resetting the stack
+    if (lua_isnumber(L, 2))
+      return str_index(L);
+    else return 0;
+  }
+  return 1; // return result of rawget
+}
+
+
 static const luaL_Reg strlib[] = {
   {"byte", str_byte},
   {"char", str_char},
@@ -840,19 +866,23 @@ static const luaL_Reg strlib[] = {
   {"reverse", str_reverse},
   {"sub", str_sub},
   {"upper", str_upper},
+  {"at", str_index},
   {NULL, NULL}
 };
 
 
-static void createmetatable (lua_State *L) {
-  lua_createtable(L, 0, 1);  /* create metatable for strings */
+static void registermetatable (lua_State *L) {
+  // lua_createtable(L, 0, 1);  /* create metatable for strings */
+  // metatable for strings is now the string library
   lua_pushliteral(L, "");  /* dummy string */
-  lua_pushvalue(L, -2);
+  lua_pushvalue(L, -2); /* copy of the string library table */
   lua_setmetatable(L, -2);  /* set string metatable */
   lua_pop(L, 1);  /* pop dummy string */
-  lua_pushvalue(L, -2);  /* string library... */
-  lua_setfield(L, -2, "__index");  /* ...is the __index metamethod */
-  lua_pop(L, 1);  /* pop metatable */
+  // lua_pushvalue(L, -2);  /* string library... */
+  // lua_setfield(L, -2, "__lib");  /* ...is stored in metatable for reference */
+  lua_pushcfunction(L, str_meta_index);
+  lua_setfield(L, -2, "__index"); /* set __index metamethod of string library */
+  // lua_pop(L, 1);  /* pop metatable */
 }
 
 
@@ -865,7 +895,7 @@ LUALIB_API int luaopen_string (lua_State *L) {
   lua_getfield(L, -1, "gmatch");
   lua_setfield(L, -2, "gfind");
 #endif
-  createmetatable(L);
+  registermetatable(L);
   return 1;
 }
 

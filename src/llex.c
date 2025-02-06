@@ -35,11 +35,29 @@
 
 /* ORDER RESERVED */
 const char *const luaX_tokens [] = {
-    "and", "break", "do", "else", "elseif",
-    "end", "false", "for", "function", "if",
-    "in", "local", "nil", "not", "or", "repeat",
-    "return", "then", "true", "until", "while",
-    "..", "...", "==", ">=", "<=", "~=",
+    // "and",
+    "^^", // break
+    // "do",
+    // "else", 
+    // "elseif",
+    // "end", 
+    // "false", 
+    // "for", 
+    // "function", 
+    // "if",
+    // "in", 
+    // "local", 
+    // "nil",
+    // "not",
+    // "or",
+    // "repeat",
+    // "return", 
+    // "then", 
+    // "true", 
+    // "until", 
+    // "while",
+    /* other terminal symbols */
+    "..", "...", "==", ">=", "<=", "!=", "->",
     "<number>", "<name>", "<string>", "<eof>",
     NULL
 };
@@ -198,8 +216,11 @@ static void read_numeral (LexState *ls, SemInfo *seminfo) {
   } while (isdigit(ls->current) || ls->current == '.');
   if (check_next(ls, "Ee"))  /* `E'? */
     check_next(ls, "+-");  /* optional exponent sign */
-  while (isalnum(ls->current) || ls->current == '_')
-    save_and_next(ls);
+  while (isalnum(ls->current) || ls->current == '_') {
+    /* skip any underscores */
+    if (ls->current != '_') save_and_next(ls);
+    else next(ls);
+  }
   save(ls, '\0');
   buffreplace(ls, '.', ls->decpoint);  /* follow locale for decimal point */
   if (!luaO_str2d(luaZ_buffer(ls->buff), &seminfo->r))  /* format error? */
@@ -342,6 +363,10 @@ static int llex (LexState *ls, SemInfo *seminfo) {
       }
       case '-': {
         next(ls);
+        if (ls->current == '>') {
+          next(ls);
+          return TK_ARROW;
+        }
         if (ls->current != '-') return '-';
         /* else is a comment */
         next(ls);
@@ -383,10 +408,15 @@ static int llex (LexState *ls, SemInfo *seminfo) {
         if (ls->current != '=') return '>';
         else { next(ls); return TK_GE; }
       }
-      case '~': {
+      case '!': {
         next(ls);
-        if (ls->current != '=') return '~';
+        if (ls->current != '=') return '!';
         else { next(ls); return TK_NE; }
+      }
+      case '^': {
+        next(ls);
+        if (ls->current != '^') return '^';
+        else { next(ls); return TK_BREAK; }
       }
       case '"':
       case '\'': {
