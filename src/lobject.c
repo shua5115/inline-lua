@@ -1,7 +1,7 @@
 /*
 ** $Id: lobject.c,v 2.22.1.1 2007/12/27 13:02:25 roberto Exp $
 ** Some generic functions over Lua objects
-** See Copyright Notice in lua.h
+** See Copyright Notice in inlua.h
 */
 
 #include <ctype.h>
@@ -13,7 +13,7 @@
 #define lobject_c
 #define LUA_CORE
 
-#include "lua.h"
+#include "inlua.h"
 
 #include "ldo.h"
 #include "lmem.h"

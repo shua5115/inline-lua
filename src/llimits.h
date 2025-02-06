@@ -1,7 +1,7 @@
 /*
 ** $Id: llimits.h,v 1.69.1.1 2007/12/27 13:02:25 roberto Exp $
 ** Limits, basic types, and some other `installation-dependent' definitions
-** See Copyright Notice in lua.h
+** See Copyright Notice in inlua.h
 */
 
 #ifndef llimits_h
@@ -12,7 +12,7 @@
 #include <stddef.h>
 
 
-#include "lua.h"
+#include "inlua.h"
 
 
 typedef LUAI_UINT32 lu_int32;

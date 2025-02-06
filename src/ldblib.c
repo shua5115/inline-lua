@@ -1,7 +1,7 @@
 /*
 ** $Id: ldblib.c,v 1.104.1.4 2009/08/04 18:50:18 roberto Exp $
 ** Interface from Lua to its debug API
-** See Copyright Notice in lua.h
+** See Copyright Notice in inlua.h
 */
 
 
@@ -12,10 +12,10 @@
 #define ldblib_c
 #define LUA_LIB
 
-#include "lua.h"
+#include "inlua.h"
 
-#include "lauxlib.h"
-#include "lualib.h"
+#include "inlauxlib.h"
+#include "inlualib.h"
 
 
 

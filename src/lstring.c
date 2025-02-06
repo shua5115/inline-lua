@@ -1,7 +1,7 @@
 /*
 ** $Id: lstring.c,v 2.8.1.1 2007/12/27 13:02:25 roberto Exp $
 ** String table (keeps all strings handled by Lua)
-** See Copyright Notice in lua.h
+** See Copyright Notice in inlua.h
 */
 
 
@@ -10,7 +10,7 @@
 #define lstring_c
 #define LUA_CORE
 
-#include "lua.h"
+#include "inlua.h"
 
 #include "lmem.h"
 #include "lobject.h"

@@ -1,7 +1,7 @@
 /*
 ** $Id: loadlib.c,v 1.52.1.4 2009/09/09 13:17:16 roberto Exp $
 ** Dynamic library loader for Lua
-** See Copyright Notice in lua.h
+** See Copyright Notice in inlua.h
 **
 ** This module contains an implementation of loadlib for Unix systems
 ** that have dlfcn, an implementation for Darwin (Mac OS X), an
@@ -16,10 +16,10 @@
 #define loadlib_c
 #define LUA_LIB
 
-#include "lua.h"
+#include "inlua.h"
 
-#include "lauxlib.h"
-#include "lualib.h"
+#include "inlauxlib.h"
+#include "inlualib.h"
 
 
 /* prefix for open functions in C libraries */

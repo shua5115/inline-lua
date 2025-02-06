@@ -1,7 +1,7 @@
 /*
 ** $Id: lbaselib.c,v 1.191.1.6 2008/02/14 16:46:22 roberto Exp $
 ** Basic library
-** See Copyright Notice in lua.h
+** See Copyright Notice in inlua.h
 */
 
 
@@ -14,10 +14,10 @@
 #define lbaselib_c
 #define LUA_LIB
 
-#include "lua.h"
+#include "inlua.h"
 
-#include "lauxlib.h"
-#include "lualib.h"
+#include "inlauxlib.h"
+#include "inlualib.h"
 
 
 

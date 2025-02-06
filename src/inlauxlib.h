@@ -1,7 +1,7 @@
 /*
-** $Id: lauxlib.h,v 1.88.1.1 2007/12/27 13:02:25 roberto Exp $
+** $Id: inlauxlib.h,v 1.88.1.1 2007/12/27 13:02:25 roberto Exp $
 ** Auxiliary functions for building Lua libraries
-** See Copyright Notice in lua.h
+** See Copyright Notice in inlua.h
 */
 
 
@@ -12,7 +12,7 @@
 #include <stddef.h>
 #include <stdio.h>
 
-#include "lua.h"
+#include "inlua.h"
 
 
 #if defined(LUA_COMPAT_GETN)

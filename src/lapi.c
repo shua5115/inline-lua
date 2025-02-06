@@ -1,7 +1,7 @@
 /*
 ** $Id: lapi.c,v 2.55.1.5 2008/07/04 18:41:18 roberto Exp $
 ** Lua API
-** See Copyright Notice in lua.h
+** See Copyright Notice in inlua.h
 */
 
 
@@ -13,7 +13,7 @@
 #define lapi_c
 #define LUA_CORE
 
-#include "lua.h"
+#include "inlua.h"
 
 #include "lapi.h"
 #include "ldebug.h"

@@ -1,7 +1,7 @@
 /*
 ** $Id: print.c,v 1.55a 2006/05/31 13:30:05 lhf Exp $
 ** print bytecodes
-** See Copyright Notice in lua.h
+** See Copyright Notice in inlua.h
 */
 
 #include <ctype.h>

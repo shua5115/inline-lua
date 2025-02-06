@@ -1,7 +1,7 @@
 /*
 ** $Id: lua.c,v 1.160.1.2 2007/12/28 15:32:23 roberto Exp $
 ** Lua stand-alone interpreter
-** See Copyright Notice in lua.h
+** See Copyright Notice in inlua.h
 */
 
 
@@ -12,10 +12,10 @@
 
 #define lua_c
 
-#include "lua.h"
+#include "inlua.h"
 
-#include "lauxlib.h"
-#include "lualib.h"
+#include "inlauxlib.h"
+#include "inlualib.h"
 
 
 
@@ -109,7 +109,7 @@ static int docall (lua_State *L, int narg, int clear) {
 
 
 static void print_version (void) {
-  l_message(NULL, LUA_RELEASE "  " LUA_COPYRIGHT);
+  l_message(NULL, "Inlua, based on " LUA_RELEASE "  " LUA_COPYRIGHT);
 }
 
 

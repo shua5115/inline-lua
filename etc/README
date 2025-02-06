@@ -8,7 +8,7 @@ all.c
 	Full Lua interpreter in a single file.
 	Do "make one" for a demo.
 
-lua.hpp
+inlua.hpp
 	Lua header files for C++ using 'extern "C"'.
 
 lua.ico

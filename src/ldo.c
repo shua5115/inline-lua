@@ -1,7 +1,7 @@
 /*
 ** $Id: ldo.c,v 2.38.1.4 2012/01/18 02:27:10 roberto Exp $
 ** Stack and Call structure of Lua
-** See Copyright Notice in lua.h
+** See Copyright Notice in inlua.h
 */
 
 
@@ -12,7 +12,7 @@
 #define ldo_c
 #define LUA_CORE
 
-#include "lua.h"
+#include "inlua.h"
 
 #include "ldebug.h"
 #include "ldo.h"

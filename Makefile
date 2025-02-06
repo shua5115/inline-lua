@@ -1,6 +1,6 @@
 # makefile for installing Lua
 # see INSTALL for installation instructions
-# see src/Makefile and src/luaconf.h for further customization
+# see src/Makefile and src/inluaconf.h for further customization
 
 # == CHANGE THE SETTINGS BELOW TO SUIT YOUR ENVIRONMENT =======================
 
@@ -16,7 +16,7 @@ INSTALL_LIB= $(INSTALL_TOP)/lib
 INSTALL_MAN= $(INSTALL_TOP)/man/man1
 #
 # You probably want to make INSTALL_LMOD and INSTALL_CMOD consistent with
-# LUA_ROOT, LUA_LDIR, and LUA_CDIR in luaconf.h (and also with etc/lua.pc).
+# LUA_ROOT, LUA_LDIR, and LUA_CDIR in inluaconf.h (and also with etc/lua.pc).
 INSTALL_LMOD= $(INSTALL_TOP)/share/inlua/$V
 INSTALL_CMOD= $(INSTALL_TOP)/lib/inlua/$V
 
@@ -42,7 +42,7 @@ PLATS= aix ansi bsd freebsd generic linux macosx mingw posix solaris
 
 # What to install.
 TO_BIN= inlua inluac
-TO_INC= lua.h luaconf.h lualib.h lauxlib.h ../etc/lua.hpp
+TO_INC= inlua.h inluaconf.h inlualib.h inlauxlib.h ../etc/inlua.hpp
 TO_LIB= libinlua.a
 TO_MAN= lua.1 luac.1
 
@@ -101,7 +101,7 @@ echo:
 	@echo "INSTALL_EXEC = $(INSTALL_EXEC)"
 	@echo "INSTALL_DATA = $(INSTALL_DATA)"
 	@echo ""
-	@echo "See also src/luaconf.h ."
+	@echo "See also src/inluaconf.h ."
 	@echo ""
 
 # echo private config parameters

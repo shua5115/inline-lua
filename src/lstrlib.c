@@ -1,7 +1,7 @@
 /*
 ** $Id: lstrlib.c,v 1.132.1.5 2010/05/14 15:34:19 roberto Exp $
 ** Standard library for string operations and pattern-matching
-** See Copyright Notice in lua.h
+** See Copyright Notice in inlua.h
 */
 
 
@@ -14,10 +14,10 @@
 #define lstrlib_c
 #define LUA_LIB
 
-#include "lua.h"
+#include "inlua.h"
 
-#include "lauxlib.h"
-#include "lualib.h"
+#include "inlauxlib.h"
+#include "inlualib.h"
 
 
 /* macro to `unsign' a character */

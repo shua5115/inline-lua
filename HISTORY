@@ -150,7 +150,7 @@ HISTORY for Inline, based on Lua 5.1.5
   + user supplies memory allocator (lua_open becomes lua_newstate).
   + luaopen_* functions must be called through Lua.
   Implementation:
-  + new configuration scheme via luaconf.h.
+  + new configuration scheme via inluaconf.h.
   + incremental garbage collection.
   + better handling of end-of-line in the lexer.
   + fully reentrant parser (new Lua function `load')

@@ -276,7 +276,7 @@ any other value makes it true.
 (It is easy to build Lua interpreters that use other
 internal representations for numbers,
 such as single-precision float or long integers;
-see file <code>luaconf.h</code>.)
+see file <code>inluaconf.h</code>.)
 <em>String</em> represents arrays of characters.
 
 Lua is 8-bit clean:
@@ -2241,7 +2241,7 @@ This section describes the C&nbsp;API for Lua, that is,
 the set of C&nbsp;functions available to the host program to communicate
 with Lua.
 All API functions and related types and constants
-are declared in the header file <a name="pdf-lua.h"><code>lua.h</code></a>.
+are declared in the header file <a name="pdf-inlua.h"><code>inlua.h</code></a>.
 
 
 <p>
@@ -2257,7 +2257,7 @@ As in most C&nbsp;libraries,
 the Lua API functions do not check their arguments for validity or consistency.
 However, you can change this behavior by compiling Lua
 with a proper definition for the macro <a name="pdf-luai_apicheck"><code>luai_apicheck</code></a>,
-in file <code>luaconf.h</code>.
+in file <code>inluaconf.h</code>.
 
 
 
@@ -2429,7 +2429,7 @@ and therefore should not be used for other purposes.
 <p>
 Internally, Lua uses the C <code>longjmp</code> facility to handle errors.
 (You can also choose to use exceptions if you use C++;
-see file <code>luaconf.h</code>.)
+see file <code>inluaconf.h</code>.)
 When Lua faces any error
 (such as memory allocation errors, type errors, syntax errors,
 and runtime errors)
@@ -3357,7 +3357,7 @@ this confuses the next call to <a href="#lua_next"><code>lua_next</code></a>.
 
 <p>
 The type of numbers in Lua.
-By default, it is double, but that can be changed in <code>luaconf.h</code>.
+By default, it is double, but that can be changed in <code>inluaconf.h</code>.
 
 
 <p>
@@ -3428,7 +3428,7 @@ since by then the stack has unwound.
 <p>
 The <a href="#lua_pcall"><code>lua_pcall</code></a> function returns 0 in case of success
 or one of the following error codes
-(defined in <code>lua.h</code>):
+(defined in <code>inlua.h</code>):
 
 <ul>
 
@@ -4189,7 +4189,7 @@ Returns the type of the value in the given acceptable index,
 or <code>LUA_TNONE</code> for a non-valid index
 (that is, an index to an "empty" stack position).
 The types returned by <a href="#lua_type"><code>lua_type</code></a> are coded by the following constants
-defined in <code>lua.h</code>:
+defined in <code>inlua.h</code>:
 <code>LUA_TNIL</code>,
 <code>LUA_TNUMBER</code>,
 <code>LUA_TBOOLEAN</code>,
@@ -4723,7 +4723,7 @@ common tasks.
 
 <p>
 All functions from the auxiliary library
-are defined in header file <code>lauxlib.h</code> and
+are defined in header file <code>inlauxlib.h</code> and
 have a prefix <code>luaL_</code>.
 
 
@@ -5683,7 +5683,7 @@ it can open them individually by calling
 <a name="pdf-luaopen_io"><code>luaopen_io</code></a> (for the I/O library),
 <a name="pdf-luaopen_os"><code>luaopen_os</code></a> (for the Operating System library),
 and <a name="pdf-luaopen_debug"><code>luaopen_debug</code></a> (for the debug library).
-These functions are declared in <a name="pdf-lualib.h"><code>lualib.h</code></a>
+These functions are declared in <a name="pdf-inlualib.h"><code>inlualib.h</code></a>
 and should not be called directly:
 you must call them like any other Lua C&nbsp;function,
 e.g., by using <a href="#lua_call"><code>lua_call</code></a>.
@@ -6426,7 +6426,7 @@ The path used by <a href="#pdf-require"><code>require</code></a> to search for a
 Lua initializes the C&nbsp;path <a href="#pdf-package.cpath"><code>package.cpath</code></a> in the same way
 it initializes the Lua path <a href="#pdf-package.path"><code>package.path</code></a>,
 using the environment variable <a name="pdf-LUA_CPATH"><code>LUA_CPATH</code></a>
-or a default path defined in <code>luaconf.h</code>.
+or a default path defined in <code>inluaconf.h</code>.
 
 
 
@@ -6577,7 +6577,7 @@ The path used by <a href="#pdf-require"><code>require</code></a> to search for a
 <p>
 At start-up, Lua initializes this variable with
 the value of the environment variable <a name="pdf-LUA_PATH"><code>LUA_PATH</code></a> or
-with a default path defined in <code>luaconf.h</code>,
+with a default path defined in <code>inluaconf.h</code>,
 if the environment variable is not defined.
 Any "<code>;;</code>" in the value of the environment variable
 is replaced by the default path.
@@ -8582,7 +8582,7 @@ is a more portable solution.)
 Here we list the incompatibilities that you may find when moving a program
 from Lua&nbsp;5.0 to Lua&nbsp;5.1.
 You can avoid most of the incompatibilities compiling Lua with
-appropriate options (see file <code>luaconf.h</code>).
+appropriate options (see file <code>inluaconf.h</code>).
 However,
 all these compatibility options will be removed in the next version of Lua.
 
@@ -8594,7 +8594,7 @@ all these compatibility options will be removed in the next version of Lua.
 <li>
 The vararg system changed from the pseudo-argument <code>arg</code> with a
 table with the extra arguments to the vararg expression.
-(See compile-time option <code>LUA_COMPAT_VARARG</code> in <code>luaconf.h</code>.)
+(See compile-time option <code>LUA_COMPAT_VARARG</code> in <code>inluaconf.h</code>.)
 </li>
 
 <li>
@@ -8606,7 +8606,7 @@ variables of the <b>for</b> statement and for the <b>repeat</b> statement.
 The long string/long comment syntax (<code>[[<em>string</em>]]</code>)
 does not allow nesting.
 You can use the new syntax (<code>[=[<em>string</em>]=]</code>) in these cases.
-(See compile-time option <code>LUA_COMPAT_LSTR</code> in <code>luaconf.h</code>.)
+(See compile-time option <code>LUA_COMPAT_LSTR</code> in <code>inluaconf.h</code>.)
 </li>
 
 </ul>
@@ -8619,7 +8619,7 @@ You can use the new syntax (<code>[=[<em>string</em>]=]</code>) in these cases.
 
 <li>
 Function <code>string.gfind</code> was renamed <a href="#pdf-string.gmatch"><code>string.gmatch</code></a>.
-(See compile-time option <code>LUA_COMPAT_GFIND</code> in <code>luaconf.h</code>.)
+(See compile-time option <code>LUA_COMPAT_GFIND</code> in <code>inluaconf.h</code>.)
 </li>
 
 <li>
@@ -8635,17 +8635,17 @@ Function <code>table.setn</code> was deprecated.
 Function <code>table.getn</code> corresponds
 to the new length operator (<code>#</code>);
 use the operator instead of the function.
-(See compile-time option <code>LUA_COMPAT_GETN</code> in <code>luaconf.h</code>.)
+(See compile-time option <code>LUA_COMPAT_GETN</code> in <code>inluaconf.h</code>.)
 </li>
 
 <li>
 Function <code>loadlib</code> was renamed <a href="#pdf-package.loadlib"><code>package.loadlib</code></a>.
-(See compile-time option <code>LUA_COMPAT_LOADLIB</code> in <code>luaconf.h</code>.)
+(See compile-time option <code>LUA_COMPAT_LOADLIB</code> in <code>inluaconf.h</code>.)
 </li>
 
 <li>
 Function <code>math.mod</code> was renamed <a href="#pdf-math.fmod"><code>math.fmod</code></a>.
-(See compile-time option <code>LUA_COMPAT_MOD</code> in <code>luaconf.h</code>.)
+(See compile-time option <code>LUA_COMPAT_MOD</code> in <code>inluaconf.h</code>.)
 </li>
 
 <li>
