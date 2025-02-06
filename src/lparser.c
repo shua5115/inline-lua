@@ -451,13 +451,13 @@ static void field (LexState *ls, expdesc *v) {
 }
 
 
-static void yindex (LexState *ls, expdesc *v) {
-  /* index -> '[' expr ']' */
-  luaX_next(ls);  /* skip the '[' */
-  expr(ls, v);
-  luaK_exp2val(ls->fs, v);
-  checknext(ls, ']');
-}
+// static void yindex (LexState *ls, expdesc *v) {
+//   /* index -> '[' expr ']' */
+//   luaX_next(ls);  /* skip the '[' */
+//   expr(ls, v);
+//   luaK_exp2val(ls->fs, v);
+//   checknext(ls, ']');
+// }
 
 
 static void eindex(LexState *ls, expdesc *v) {
@@ -495,8 +495,10 @@ static void recfield (LexState *ls, struct ConsControl *cc) {
     luaY_checklimit(fs, cc->nh, MAX_INT, "items in a constructor");
     checkname(ls, &key);
   }
-  else  /* ls->t.token == '[' */
-    yindex(ls, &key);
+  else { /* ls->t.token == '.' */
+    luaX_next(ls); // skip '.'
+    eindex(ls, &key);
+  }
   cc->nh++;
   checknext(ls, '=');
   rkkey = luaK_exp2RK(fs, &key);
@@ -525,7 +527,11 @@ static void lastlistfield (FuncState *fs, struct ConsControl *cc) {
     cc->na--;  /* do not count last expression (unknown number of elements) */
   }
   else {
-    if (cc->v.k != VVOID)
+    if (cc->v.k == VBLOCK) {
+      int adj = luaK_blockresults2regs(fs, &cc->v, LUA_MULTRET)-1;
+      cc->na += adj;
+      cc->tostore += adj;
+    } else if (cc->v.k != VVOID)
       luaK_exp2nextreg(fs, &cc->v);
     luaK_setlist(fs, cc->t->u.s.info, cc->na, cc->tostore);
   }
@@ -565,7 +571,7 @@ static void constructor (LexState *ls, expdesc *t) {
           recfield(ls, &cc);
         break;
       }
-      case '[': {  /* constructor_item -> recfield */
+      case '.': {  /* constructor_item -> recfield */
         recfield(ls, &cc);
         break;
       }
@@ -752,14 +758,14 @@ static void primaryexp (LexState *ls, expdesc *v) {
     luaX_next(ls);
     retstat(ls);
     testnext(ls, ';');
-    init_exp(v, VVOID, 0);
+    init_exp(v, VNIL, 0);
     return;
   }
   if (ls->t.token == TK_BREAK) {
     luaX_next(ls);
     breakstat(ls);
     testnext(ls, ';');
-    init_exp(v, VVOID, 0);
+    init_exp(v, VNIL, 0);
     return;
   }
   prefixexp(ls, v);

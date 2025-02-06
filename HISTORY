@@ -47,6 +47,9 @@ HISTORY for Inline, based on Lua 5.1.5
     * Added logic for creating the block expression
     * Setting `fs->freereg` to `bl->freereg` instead of `fs->nactvar`, in accordance with previous changes.
   * Added function `eindex`, similar to `yindex`, for indexing with `()`: This is used when handling `table.(key)`
+  * `recfield`: changed syntax for expression keys from `[expr]=val` to `.(expr)=val`
+  * `lastlistfield`: added logic to handle block expressions 
+  * `constructor`: changed case for expression key from `[` to `.`
   * `body`: changed grammar from `(parlist) chunk END` to `[parlist](chunk)`
   * `explist1`: If a block is the last expression, place all block results on stack, adjusting number of expressions accordingly.
   * `funcargs`:
@@ -56,7 +59,7 @@ HISTORY for Inline, based on Lua 5.1.5
     * Sub-expression `( expr )` changed to `( chunk )`. This is where block expressions start.
     * Added while loop expression `? cond -> (chunk)`. This is also a block expression, but it behaves differently (see `leaveblock`).
   * `primaryexp`:
-    * Added return `^` and break `^^` as primary expressions. They are both of type void, so they have no value. Since they interrupt control flow, their values would never be used anyway.
+    * Added return `^` and break `^^` as primary expressions.
     * Changed indexing from `table[key]` to `table.(key)`, adding logic to distinguish from field access (e.g. `table.field`)
     * Removed ability to call functions without parentheses to increase clarity and consistency of code.
   * `simpleexp`:
