@@ -36,7 +36,7 @@
 /* ORDER RESERVED */
 const char *const luaX_tokens [] = {
     // "and",
-    "^^", // break
+    "^^^", // break
     // "do",
     // "else", 
     // "elseif",
@@ -51,7 +51,7 @@ const char *const luaX_tokens [] = {
     // "not",
     // "or",
     // "repeat",
-    // "return", 
+    "^^",  // return
     // "then", 
     // "true", 
     // "until", 
@@ -416,7 +416,11 @@ static int llex (LexState *ls, SemInfo *seminfo) {
       case '^': {
         next(ls);
         if (ls->current != '^') return '^';
-        else { next(ls); return TK_BREAK; }
+        else {
+          next(ls); 
+          if (ls->current != '^') return TK_RETURN;
+          else { next(ls); return TK_BREAK; }
+        }
       }
       case '"':
       case '\'': {

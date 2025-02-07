@@ -1,0 +1,36 @@
+-- fibonacci function with cache
+
+-- very inefficient fibonacci function
+fib = [n](
+	N=N+1
+	^^(n<2) & n | fib(n-1)+fib(n-2);
+)
+
+-- a general-purpose value cache
+cache = [f](
+	@c={}
+	^^[x](
+		@y=c.(x)
+		^^y | (
+			y = f(x);
+			c.(x) = y;
+			y
+		)
+    )
+)
+
+-- run and time it
+test = [s,f](
+	N=0
+	@c=os.clock()
+	@v=f(n)
+	@t=os.clock()-c
+	print(s,n,v,t,N)
+)
+
+n=arg.(1) | 24		-- for other values, do lua fib.lua XX
+n=tonumber(n)
+print("","n","value","time","evals")
+test("plain",fib)
+fib=cache(fib)
+test("cached",fib)

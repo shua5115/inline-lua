@@ -1,0 +1,33 @@
+-- function closures are powerful
+
+-- traditional fixed-point operator from functional programming
+Y = [g](
+    @a = [f](^^f(f));
+    ^^a( [f](
+        ^^g( [x](
+            @c=f(f);
+            ^^c(x)
+        ) )
+    ) );
+);
+
+
+-- factorial without recursion
+F = [f](
+    ^^[n](
+        (n == 0) & ^^1; | ^^n*f(n-1);
+    )
+)
+
+factorial = Y(F)   -- factorial is the fixed point of F
+
+-- now test it
+test = [x](
+	io.write(x,"! = ",factorial(x),"\n")
+)
+
+@n = 0
+? n<=16 -> (
+    test(n)
+    n = n + 1
+)

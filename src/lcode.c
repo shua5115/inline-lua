@@ -300,51 +300,6 @@ void luaK_setoneret (FuncState *fs, expdesc *e) {
   }
 }
 
-// Returns the number of registers filled, starting from fs->freereg at time of call.
-// Reserves n registers, so the original freereg is: `fs->freereg-returnval`
-int luaK_blockresults2regs(FuncState *fs, expdesc *e, int nresults) {
-  int i, n;
-  lua_assert(e->k == VBLOCK);
-  if (nresults == LUA_MULTRET) {
-    n = e->u.s.aux - e->u.s.info; // set number of results to number of values available
-    if (n <= 0) {
-      e->u.s.aux = e->u.s.info; // enforce end condition
-      // blocks with no value evaluate to true
-      luaK_codeABC(fs, OP_LOADBOOL, fs->freereg, 1, 0);
-      luaK_reserveregs(fs, 1);
-      return 1;
-    }
-  } else if (nresults <= 0) {
-    return 0;
-  } else {
-    n = nresults;
-  }
-  for(i = 0; i < n; i++) {
-    int sourcereg = e->u.s.info + i;
-    int targetreg = fs->freereg + i;
-    if (sourcereg >= e->u.s.aux) { // there are no more value to return, so fill rest with nil
-      if (i == 0) { // first result is true if block has no value
-        luaK_codeABC(fs, OP_LOADBOOL, targetreg, 1, 0);
-        i++;
-        if ((n-i) > 0) luaK_nil(fs, targetreg+1, n-i);
-      } else 
-        luaK_nil(fs, targetreg, n-i);
-      break;
-    } else if (sourcereg != targetreg) {
-      // printf("move in blockresults2regs\n");
-      luaK_codeABC(fs, OP_MOVE, targetreg, sourcereg, 0);
-    }
-  }
-
-  luaK_reserveregs(fs, n);
-  // if (nresults == LUA_MULTRET) {
-  //   // increment freereg by the number of added variables
-  // } else {
-  //   luaK_reserveregs(fs, 1); // remaining n-1 reserved by caller
-  // }
-  return n;
-}
-
 
 void luaK_dischargevars (FuncState *fs, expdesc *e) {
   switch (e->k) {
@@ -421,6 +376,7 @@ static void discharge2reg (FuncState *fs, expdesc *e, int reg) {
         // printf("move in discharge2reg\n");
         if (reg != e->u.s.info) luaK_codeABC(fs, OP_MOVE, reg, e->u.s.info, 0);
       } else {
+        // printf("loading block boolean in discharge2reg at line %d\n", fs->ls->linenumber);
         luaK_codeABC(fs, OP_LOADBOOL, reg, 1, 0);
       }
       break;
@@ -522,6 +478,52 @@ int luaK_exp2RK (FuncState *fs, expdesc *e) {
   }
   /* not a constant in the right range: put it in a register */
   return luaK_exp2anyreg(fs, e);
+}
+
+
+// Returns the number of registers filled, starting from fs->freereg at time of call.
+// Reserves n registers, so the original freereg is: `fs->freereg-returnval`
+int luaK_blockresults2regs(FuncState *fs, expdesc *e) {
+  int i, n;
+  lua_assert(e->k == VBLOCK);
+  n = e->u.s.aux - e->u.s.info; // set number of results to number of values available
+  if (n <= 0) {
+    // e->u.s.aux = e->u.s.info; // enforce end condition
+    n = 1;
+    // blocks with no value evaluate to true
+    // printf("loading block boolean in blockresults2regs at line %d\n", fs->ls->linenumber);
+    luaK_codeABC(fs, OP_LOADBOOL, fs->freereg, 1, 0);
+  } else {
+    for(i = 0; i < n; i++) {
+      int sourcereg = e->u.s.info + i;
+      int targetreg = fs->freereg + i;
+      if (sourcereg != targetreg) {
+        // printf("move in blockresults2regs\n");
+        luaK_codeABC(fs, OP_MOVE, targetreg, sourcereg, 0);
+      }
+    }
+  }
+
+  luaK_reserveregs(fs, n);
+  {
+    int reg = fs->freereg-n;
+    if (hasjumps(e)) {
+      int final;  /* position after whole expression */
+      int p_f = NO_JUMP;  /* position of an eventual LOAD false */
+      int p_t = NO_JUMP;  /* position of an eventual LOAD true */
+      if (need_value(fs, e->t) || need_value(fs, e->f)) {
+        int fj = (e->k == VJMP) ? NO_JUMP : luaK_jump(fs);
+        p_f = code_label(fs, reg, 0, 1);
+        p_t = code_label(fs, reg, 1, 0);
+        luaK_patchtohere(fs, fj);
+      }
+      final = luaK_getlabel(fs);
+      patchlistaux(fs, e->f, final, reg, p_f);
+      patchlistaux(fs, e->t, final, reg, p_t);
+    }
+    e->f = e->t = NO_JUMP;
+  }
+  return n;
 }
 
 

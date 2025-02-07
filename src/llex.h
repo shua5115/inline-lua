@@ -39,7 +39,7 @@ enum RESERVED {
   // TK_NOT, 
   // TK_OR, 
   // TK_REPEAT,
-  // TK_RETURN, 
+  TK_RETURN, 
   // TK_THEN, 
   // TK_TRUE, 
   // TK_UNTIL, 

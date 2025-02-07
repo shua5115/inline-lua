@@ -1,0 +1,25 @@
+-- bisection method for solving non-linear equations
+
+delta=1e-6;	-- tolerance
+
+bisect = [f,a,b,fa,fb](
+    @c=(a+b)/2;
+    io.write(n," c=",c," a=",a," b=",b,"\n");
+    (c==a | c==b | math.abs(a-b)<delta) & ^^c,b-a;
+    n=n+1;
+    @fc=f(c);
+    (fa*fc<0) & ^^bisect(f,a,c,fa,fc); | ^^bisect(f,c,b,fc,fb);
+);
+
+-- find root of f in the inverval [a,b]. needs f(a)*f(b)<0
+solve = [f,a,b](
+    n=0
+    @z,e=bisect(f,a,b,f(a),f(b))
+    io.write(string.format("after %d steps, root is %.17g with error %.1e, f=%.1e\n",n,z,e,f(z)))
+)
+
+-- our function
+f = [x](^^x*x*x-x-1)
+
+-- find zero in [1,2]
+solve(f,1,2)

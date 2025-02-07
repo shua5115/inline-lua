@@ -486,17 +486,18 @@ struct ConsControl {
 
 
 static void recfield (LexState *ls, struct ConsControl *cc) {
-  /* recfield -> (NAME | `['exp1`]') = exp1 */
+  /* recfield -> (.NAME | `.('expr`)') = expr */
   FuncState *fs = ls->fs;
   int reg = ls->fs->freereg;
   expdesc key, val;
   int rkkey;
+  luaX_next(ls); // skip '.'
   if (ls->t.token == TK_NAME) {
     luaY_checklimit(fs, cc->nh, MAX_INT, "items in a constructor");
     checkname(ls, &key);
   }
-  else { /* ls->t.token == '.' */
-    luaX_next(ls); // skip '.'
+  else {
+    check(ls, '(');
     eindex(ls, &key);
   }
   cc->nh++;
@@ -528,7 +529,7 @@ static void lastlistfield (FuncState *fs, struct ConsControl *cc) {
   }
   else {
     if (cc->v.k == VBLOCK) {
-      int adj = luaK_blockresults2regs(fs, &cc->v, LUA_MULTRET)-1;
+      int adj = luaK_blockresults2regs(fs, &cc->v)-1;
       cc->na += adj;
       cc->tostore += adj;
     } else if (cc->v.k != VVOID)
@@ -563,14 +564,14 @@ static void constructor (LexState *ls, expdesc *t) {
     if (ls->t.token == '}') break;
     closelistfield(fs, &cc);
     switch(ls->t.token) {
-      case TK_NAME: {  /* may be listfields or recfields */
-        luaX_lookahead(ls);
-        if (ls->lookahead.token != '=')  /* expression? */
-          listfield(ls, &cc);
-        else
-          recfield(ls, &cc);
-        break;
-      }
+      // case TK_NAME: {  /* may be listfields or recfields */
+      //   luaX_lookahead(ls);
+      //   if (ls->lookahead.token != '=')  /* expression? */
+      //     listfield(ls, &cc);
+      //   else
+      //     recfield(ls, &cc);
+      //   break;
+      // }
       case '.': {  /* constructor_item -> recfield */
         recfield(ls, &cc);
         break;
@@ -597,7 +598,7 @@ static void parlist (LexState *ls) {
   Proto *f = fs->f;
   int nparams = 0;
   f->is_vararg = 0;
-  if (ls->t.token != ')') {  /* is `parlist' not empty? */
+  if (ls->t.token != ']') {  /* is `parlist' not empty? */
     do {
       switch (ls->t.token) {
         case TK_NAME: {  /* param -> NAME */
@@ -656,7 +657,7 @@ static int explist1 (LexState *ls, expdesc *v) {
     n++;
   }
   if (v->k == VBLOCK) { // expand block values here
-    n += luaK_blockresults2regs(fs, v, LUA_MULTRET)-1; // push all results to stack
+    n += luaK_blockresults2regs(fs, v)-1; // push all results to stack
   }
   return n;
 }
@@ -751,10 +752,8 @@ static void primaryexp (LexState *ls, expdesc *v) {
         BREAK exp |
         RETURN {explist} | 
         prefixexp { `.' NAME | `.(' exp `)' | `:' NAME funcargs | (funcargs) } */
-  // NOTE: removed funcargs without parenthesis -> prefixexp funcargs
   FuncState *fs = ls->fs;
-  // TODO check if it is valid to return/break in an expression
-  if (ls->t.token == '^') {
+  if (ls->t.token == TK_RETURN) {
     luaX_next(ls);
     retstat(ls);
     testnext(ls, ';');
@@ -1000,57 +999,68 @@ static void check_conflict (LexState *ls, struct LHS_assign *lh, expdesc *v) {
 }
 
 static void abort_assignment_aux(FuncState *fs, struct LHS_assign *lh) {
+  int expectreg, actualreg;
+  fs->freereg -= 1;
   if (lh == NULL) {
     return;
-  } else {
-    fs->freereg -= 1;
   }
   abort_assignment_aux(fs, lh->prev);
-  if (lh->v.k == VBLOCK) {
-    luaK_blockresults2regs(fs, &lh->v, LUA_MULTRET);
-  } else {
-    luaK_exp2anyreg(fs, &lh->v);
+
+  // printf("abort expkind %d at freereg %d\n", lh->v.k, fs->freereg);
+  expectreg = fs->freereg;
+  actualreg = luaK_exp2anyreg(fs, &lh->v);
+  if (expectreg != actualreg) {
+    // printf("mismatch! expected %d, got %d\n", expectreg, actualreg);
+    luaK_codeABC(fs, OP_MOVE, expectreg, actualreg, 0);
   }
+  fs->freereg = expectreg;
+  luaK_reserveregs(fs, 1);
+  // printf("after abort %d freereg=%d\n", lh->v.k, fs->freereg);
 }
 
 // Returns if the assignment is aborted (values left on stack as temporaries)
 static int assignment (LexState *ls, struct LHS_assign *lh, int nvars) {
   expdesc e;
+  FuncState *fs = ls->fs;
   // check_condition(ls, VLOCAL <= lh->v.k && lh->v.k <= VINDEXED,
   //                     "syntax error");
   
-  luaK_reserveregs(ls->fs, 1);
+  luaK_reserveregs(fs, 1);
   
   if (testnext(ls, ',')) {  /* assignment -> `,' primaryexp assignment */
     // int prev_freereg, prev_nactvar;
     struct LHS_assign nv;
     nv.prev = lh;
-    
+    // printf("freereg before inner exp: %d\n", fs->freereg);
     expr(ls, &nv.v);
-    
+    if (nv.v.k == VCALL) {
+      // calls increase freereg by 1 extra (for some reason)
+      fs->freereg--;
+    }
+    // printf("freereg after inner exp: %d\n", fs->freereg);
     if (nv.v.k == VLOCAL)
       check_conflict(ls, lh, &nv.v);
-    luaY_checklimit(ls->fs, nvars, LUAI_MAXCCALLS - ls->L->nCcalls,
+    luaY_checklimit(fs, nvars, LUAI_MAXCCALLS - ls->L->nCcalls,
                     "variables in assignment");
     if (assignment(ls, &nv, nvars+1)) return 1;
   }
   else if (ls->t.token == '=') {  /* assignment -> `=' explist1 */
     int nexps;
 
-    ls->fs->freereg -= nvars; // allow overwriting temporary expressions on stack
-    // printf("starting assignment: freereg=%d\n", ls->fs->freereg);
+    fs->freereg -= nvars; // allow overwriting temporary expressions on stack
+    // printf("starting assignment: freereg=%d\n", fs->freereg);
     luaX_next(ls);
     nexps = explist1(ls, &e);
-    // printf("after explist: freereg=%d\n", ls->fs->freereg);
+    // printf("after explist: freereg=%d\n", fs->freereg);
     if (nexps != nvars || e.k == VBLOCK) {
       adjust_assign(ls, nvars, nexps, &e);
       if (nexps > nvars)
-        ls->fs->freereg -= nexps - nvars;  /* remove extra values */
+        fs->freereg -= nexps - nvars;  /* remove extra values */
     } else {
-      luaK_setoneret(ls->fs, &e);  /* close last expression */
+      luaK_setoneret(fs, &e);  /* close last expression */
       switch(lh->v.k) {
         case VLOCAL: case VUPVAL: case VGLOBAL: case VINDEXED:
-          luaK_storevar(ls->fs, &lh->v, &e);
+          luaK_storevar(fs, &lh->v, &e);
           break;
         default:
           luaX_syntaxerror(ls, "invalid assignment");
@@ -1061,8 +1071,21 @@ static int assignment (LexState *ls, struct LHS_assign *lh, int nvars) {
   } else {
     // is not actually assigning!
     // discharge all variables in order of appearance.
-    abort_assignment_aux(ls->fs, lh);
-    luaK_setoneret(ls->fs, &lh->v); // if the last expression is a function call or varargs, return only one value (blocks cannot set stack top)
+    abort_assignment_aux(fs, lh->prev);
+    // printf("final abort expkind %d at freereg %d\n", lh->v.k, fs->freereg);
+    if (lh->v.k == VBLOCK) {
+      luaK_blockresults2regs(fs, &lh->v);
+    } else {
+      int expectreg = fs->freereg;
+      int actualreg = luaK_exp2anyreg(fs, &lh->v);
+      if (expectreg != actualreg) {
+        // printf("mismatch! expected %d, got %d\n", expectreg, actualreg);
+        luaK_codeABC(fs, OP_MOVE, expectreg, actualreg, 0);
+      }
+      fs->freereg = expectreg;
+      luaK_reserveregs(fs, 1);
+      luaK_exp2nextreg(fs, &lh->v);
+    }
     return 1;
   }
   // printf("next assignment: freereg=%d\n", ls->fs->freereg);
@@ -1363,16 +1386,17 @@ static void localstat (LexState *ls) {
 
 static void exprstat (LexState *ls) {
   /* stat -> func | assignment */
-  // FuncState *fs = ls->fs;
+  
   struct LHS_assign v;
-  // primaryexp(ls, &v.v);
-  expr(ls, &v.v); // can be any expression, including a call, so the following conditional isn't needed
-  // if (v.v.k == VCALL)  /* stat -> func */
-  //   SETARG_C(getcode(fs, &v.v), 1);  /* call statement uses no results */
-  // else {  /* stat -> assignment */
+  
+  expr(ls, &v.v);
+  if (v.v.k == VCALL) {
+    // calls increase freereg by 1 extra
+    ls->fs->freereg--;
+  }
+  
   v.prev = NULL;
   assignment(ls, &v, 1);
-  // }
 }
 
 
@@ -1454,7 +1478,7 @@ static int statement (LexState *ls) {
       localstat(ls);
       return 0;
     }
-    case '^': {  /* stat -> retstat */
+    case TK_RETURN: {  /* stat -> retstat */
       luaX_next(ls);  /* skip RETURN */
       retstat(ls);
       return 1;
