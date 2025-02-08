@@ -18,7 +18,12 @@
 #include "inlauxlib.h"
 #include "inlualib.h"
 
-
+#if defined(LUA_USE_POSIX)
+#include <unistd.h>
+#include <paths.h>
+#elif defined(LUA_WIN)
+#include <windows.h>
+#endif
 
 #define IO_INPUT	1
 #define IO_OUTPUT	2
@@ -182,9 +187,60 @@ static int io_popen (lua_State *L) {
 
 static int io_popen2 (lua_State *L) {
 #if defined(LUA_USE_POSIX)
-  return 0; // TODO posix implementation
+  int cpid;
+  int cin[2];
+  int cout[2];
+  FILE **istream;
+  FILE **ostream;
+  const char *filename = luaL_checkstring(L, 1);
+
+  if (pipe(cin)) {
+    lua_pushnil(L);
+    return 1+pushresult(L, 0, NULL);
+  }
+  if (pipe(cout)) {
+    (void)close(cin[0]);
+    (void)close(cin[1]);
+    lua_pushnil(L);
+    return 1+pushresult(L, 0, NULL);
+  }
+  cpid = fork();
+  if (cpid == 0) {
+    char buf[4096] = {0};
+    // need to copy string before it is gc'd in lua
+    strncpy(buf, filename, 4095);
+    // child process
+    if (0 > dup2(cin[0], STDIN_FILENO) || 0 > dup2(cout[1], STDOUT_FILENO)) {
+      _Exit(127);
+    }
+    (void)close(cin[0]); (void)close(cin[1]); (void)close(cout[0]); (void)close(cout[1]);
+    lua_close(L); // no longer need lua state in child process, need to close all open files in the state
+    execl(_PATH_BSHELL, "sh", "-c", buf, (char*) NULL);
+    _Exit(127);
+  }
+
+  (void)close(cin[0]);
+  (void)close(cout[1]);
+
+  ostream = newfile(L);
+  *ostream = fdopen(cout[0], "r");
+  if (NULL == *ostream) {
+    (void)close(cout[0]);
+    (void)close(cin[1]);
+    lua_pushnil(L);
+    return 1+pushresult(L, 0, NULL);
+  }
+  istream = newfile(L);
+  *istream = fdopen(cin[1], "w");
+  if (NULL == *istream) {
+    (void)fclose(*ostream);
+    (void)close(cin[1]);
+    lua_pushnil(L);
+    return 1+pushresult(L, 0, NULL);
+  }
+  return 2;
 #elif defined(LUA_WIN)
-  return 0; // TODO windows implementation
+  return luaL_error(L, LUA_QL("popen2") " not supported"); // TODO windows implementation
 #else
   return luaL_error(L, LUA_QL("popen2") " not supported");
 #endif

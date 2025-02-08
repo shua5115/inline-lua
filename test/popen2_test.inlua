@@ -1,0 +1,17 @@
+-- testing to ensure forking in popen2 properly cleans up other open files.
+
+reader1, writer1, errmsg = io.popen2("cat")
+errmsg & (print("reader1 error: ", reader1, writer1, errmsg); ^^)
+
+reader2, writer2, errmsg = io.popen2("cat")
+errmsg & (print("reader2 error: ", reader2, writer2, errmsg); ^^)
+
+writer1:write("hello, ")
+writer2:write("world!\n")
+writer1:close()
+writer2:close()
+
+result1, errmsg = reader1:read("*a")
+io.write(result1 | errmsg)
+result2, errmsg = reader2:read("*a")
+io.write(result2 | errmsg)
