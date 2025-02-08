@@ -1396,7 +1396,10 @@ static void exprstat (LexState *ls) {
   }
   
   v.prev = NULL;
-  assignment(ls, &v, 1);
+  if(assignment(ls, &v, 1) == 0) {
+    // is an assignment, so clear unused temporaries
+    ls->fs->freereg = ls->fs->nactvar;
+  }
 }
 
 
@@ -1472,7 +1475,7 @@ static int statement (LexState *ls) {
     // case TK_LOCAL: {
     case '@': {  /* stat -> localstat */
       luaX_next(ls);  /* skip LOCAL */
-      // if (testnext(ls, TK_FUNCTION))  /* local function? */
+      // if (testnext(ls, TK_FUNCTION))  /* local function? */`
       //   localfunc(ls);
       // else
       localstat(ls);
