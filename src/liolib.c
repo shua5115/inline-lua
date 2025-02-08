@@ -186,13 +186,14 @@ static int io_popen (lua_State *L) {
 
 
 static int io_popen2 (lua_State *L) {
+  size_t filename_len = 0;
+  const char *filename = luaL_checklstring(L, 1, &filename_len);
 #if defined(LUA_USE_POSIX)
   int cpid;
   int cin[2];
   int cout[2];
   FILE **istream;
   FILE **ostream;
-  const char *filename = luaL_checkstring(L, 1);
 
   if (pipe(cin)) {
     lua_pushnil(L);
@@ -206,16 +207,21 @@ static int io_popen2 (lua_State *L) {
   }
   cpid = fork();
   if (cpid == 0) {
-    char buf[4096] = {0};
-    // need to copy string before it is gc'd in lua
-    strncpy(buf, filename, 4095);
+    char *argp[] = {"sh", "-c", NULL, NULL};
     // child process
     if (0 > dup2(cin[0], STDIN_FILENO) || 0 > dup2(cout[1], STDOUT_FILENO)) {
       _Exit(127);
     }
     (void)close(cin[0]); (void)close(cin[1]); (void)close(cout[0]); (void)close(cout[1]);
-    lua_close(L); // no longer need lua state in child process, need to close all open files in the state
-    execl(_PATH_BSHELL, "sh", "-c", buf, (char*) NULL);
+    // need to copy string before it is gc'd in lua
+    argp[2] = malloc(filename_len+1);
+    if (argp[2] == NULL) {
+      _Exit(1);
+    }
+    strncpy(argp[2], filename, filename_len);
+    argp[2][filename_len] = 0;
+    lua_close(L); // need to close all open files in the state before exec
+    execv(_PATH_BSHELL, argp);
     _Exit(127);
   }
 
