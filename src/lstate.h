@@ -31,7 +31,7 @@ struct lua_longjmp;  /* defined in ldo.c */
 
 #define BASIC_CI_SIZE           8
 
-#define BASIC_STACK_SIZE        (2*LUA_MINSTACK)
+#define BASIC_STACK_SIZE        (2*INLUA_MINSTACK)
 
 
 
@@ -67,7 +67,7 @@ typedef struct CallInfo {
 */
 typedef struct global_State {
   stringtable strt;  /* hash table for strings */
-  lua_Alloc frealloc;  /* function to reallocate memory */
+  inlua_Alloc frealloc;  /* function to reallocate memory */
   void *ud;         /* auxiliary data to `frealloc' */
   lu_byte currentwhite;
   lu_byte gcstate;  /* state of garbage collector */
@@ -85,9 +85,9 @@ typedef struct global_State {
   lu_mem gcdept;  /* how much GC is `behind schedule' */
   int gcpause;  /* size of pause between successive GCs */
   int gcstepmul;  /* GC `granularity' */
-  lua_CFunction panic;  /* to be called in unprotected errors */
+  inlua_CFunction panic;  /* to be called in unprotected errors */
   TValue l_registry;
-  struct lua_State *mainthread;
+  struct inlua_State *mainthread;
   UpVal uvhead;  /* head of double-linked list of all open upvalues */
   struct Table *mt[NUM_TAGS];  /* metatables for basic types */
   TString *tmname[TM_N];  /* array with tag-method names */
@@ -97,7 +97,7 @@ typedef struct global_State {
 /*
 ** `per thread' state
 */
-struct lua_State {
+struct inlua_State {
   CommonHeader;
   lu_byte status;
   StkId top;  /* first free slot in the stack */
@@ -117,7 +117,7 @@ struct lua_State {
   lu_byte allowhook;
   int basehookcount;
   int hookcount;
-  lua_Hook hook;
+  inlua_Hook hook;
   TValue l_gt;  /* table of globals */
   TValue env;  /* temporary place for environments */
   GCObject *openupval;  /* list of open upvalues in this stack */
@@ -141,29 +141,29 @@ union GCObject {
   struct Table h;
   struct Proto p;
   struct UpVal uv;
-  struct lua_State th;  /* thread */
+  struct inlua_State th;  /* thread */
 };
 
 
 /* macros to convert a GCObject into a specific value */
-#define rawgco2ts(o)	check_exp((o)->gch.tt == LUA_TSTRING, &((o)->ts))
+#define rawgco2ts(o)	check_exp((o)->gch.tt == INLUA_TSTRING, &((o)->ts))
 #define gco2ts(o)	(&rawgco2ts(o)->tsv)
-#define rawgco2u(o)	check_exp((o)->gch.tt == LUA_TUSERDATA, &((o)->u))
+#define rawgco2u(o)	check_exp((o)->gch.tt == INLUA_TUSERDATA, &((o)->u))
 #define gco2u(o)	(&rawgco2u(o)->uv)
-#define gco2cl(o)	check_exp((o)->gch.tt == LUA_TFUNCTION, &((o)->cl))
-#define gco2h(o)	check_exp((o)->gch.tt == LUA_TTABLE, &((o)->h))
+#define gco2cl(o)	check_exp((o)->gch.tt == INLUA_TFUNCTION, &((o)->cl))
+#define gco2h(o)	check_exp((o)->gch.tt == INLUA_TTABLE, &((o)->h))
 #define gco2p(o)	check_exp((o)->gch.tt == LUA_TPROTO, &((o)->p))
 #define gco2uv(o)	check_exp((o)->gch.tt == LUA_TUPVAL, &((o)->uv))
 #define ngcotouv(o) \
 	check_exp((o) == NULL || (o)->gch.tt == LUA_TUPVAL, &((o)->uv))
-#define gco2th(o)	check_exp((o)->gch.tt == LUA_TTHREAD, &((o)->th))
+#define gco2th(o)	check_exp((o)->gch.tt == INLUA_TTHREAD, &((o)->th))
 
 /* macro to convert any Lua object into a GCObject */
 #define obj2gco(v)	(cast(GCObject *, (v)))
 
 
-LUAI_FUNC lua_State *luaE_newthread (lua_State *L);
-LUAI_FUNC void luaE_freethread (lua_State *L, lua_State *L1);
+INLUAI_FUNC inlua_State *luaE_newthread (inlua_State *L);
+INLUAI_FUNC void luaE_freethread (inlua_State *L, inlua_State *L1);
 
 #endif
 

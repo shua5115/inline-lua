@@ -10,7 +10,7 @@
 #include <string.h>
 
 #define luac_c
-#define LUA_CORE
+#define INLUA_CORE
 
 #include "inlua.h"
 #include "inlauxlib.h"
@@ -48,7 +48,7 @@ static void cannot(const char* what)
 static void usage(const char* message)
 {
  if (*message=='-')
-  fprintf(stderr,"%s: unrecognized option " LUA_QS "\n",progname,message);
+  fprintf(stderr,"%s: unrecognized option " INLUA_QS "\n",progname,message);
  else
   fprintf(stderr,"%s: %s\n",progname,message);
  fprintf(stderr,
@@ -56,7 +56,7 @@ static void usage(const char* message)
  "Available options are:\n"
  "  -        process stdin\n"
  "  -l       list\n"
- "  -o name  output to file " LUA_QL("name") " (default is \"%s\")\n"
+ "  -o name  output to file " INLUA_QL("name") " (default is \"%s\")\n"
  "  -p       parse only\n"
  "  -s       strip debug information\n"
  "  -v       show version information\n"
@@ -89,7 +89,7 @@ static int doargs(int argc, char* argv[])
   else if (IS("-o"))			/* output file */
   {
    output=argv[++i];
-   if (output==NULL || *output==0) usage(LUA_QL("-o") " needs argument");
+   if (output==NULL || *output==0) usage(INLUA_QL("-o") " needs argument");
    if (IS("-")) output=NULL;
   }
   else if (IS("-p"))			/* parse only */
@@ -108,7 +108,7 @@ static int doargs(int argc, char* argv[])
  }
  if (version)
  {
-  printf("%s  %s\n",LUA_RELEASE,LUA_COPYRIGHT);
+  printf("%s  %s\n",INLUA_RELEASE,INLUA_COPYRIGHT);
   if (version==argc-1) exit(EXIT_SUCCESS);
  }
  return i;
@@ -116,7 +116,7 @@ static int doargs(int argc, char* argv[])
 
 #define toproto(L,i) (clvalue(L->top+(i))->l.p)
 
-static const Proto* combine(lua_State* L, int n)
+static const Proto* combine(inlua_State* L, int n)
 {
  if (n==1)
   return toproto(L,-1);
@@ -144,7 +144,7 @@ static const Proto* combine(lua_State* L, int n)
  }
 }
 
-static int writer(lua_State* L, const void* p, size_t size, void* u)
+static int writer(inlua_State* L, const void* p, size_t size, void* u)
 {
  UNUSED(L);
  return (fwrite(p,size,1,(FILE*)u)!=1) && (size!=0);
@@ -155,18 +155,18 @@ struct Smain {
  char** argv;
 };
 
-static int pmain(lua_State* L)
+static int pmain(inlua_State* L)
 {
- struct Smain* s = (struct Smain*)lua_touserdata(L, 1);
+ struct Smain* s = (struct Smain*)inlua_touserdata(L, 1);
  int argc=s->argc;
  char** argv=s->argv;
  const Proto* f;
  int i;
- if (!lua_checkstack(L,argc)) fatal("too many input files");
+ if (!inlua_checkstack(L,argc)) fatal("too many input files");
  for (i=0; i<argc; i++)
  {
   const char* filename=IS("-") ? NULL : argv[i];
-  if (luaL_loadfile(L,filename)!=0) fatal(lua_tostring(L,-1));
+  if (inluaL_loadfile(L,filename)!=0) fatal(inlua_tostring(L,-1));
  }
  f=combine(L,argc);
  if (listing) luaU_print(f,listing>1);
@@ -185,16 +185,16 @@ static int pmain(lua_State* L)
 
 int main(int argc, char* argv[])
 {
- lua_State* L;
+ inlua_State* L;
  struct Smain s;
  int i=doargs(argc,argv);
  argc-=i; argv+=i;
  if (argc<=0) usage("no input files given");
- L=lua_open();
+ L=inlua_open();
  if (L==NULL) fatal("not enough memory for state");
  s.argc=argc;
  s.argv=argv;
- if (lua_cpcall(L,pmain,&s)!=0) fatal(lua_tostring(L,-1));
- lua_close(L);
+ if (inlua_cpcall(L,pmain,&s)!=0) fatal(inlua_tostring(L,-1));
+ inlua_close(L);
  return EXIT_SUCCESS;
 }

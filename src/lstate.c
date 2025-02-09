@@ -8,7 +8,7 @@
 #include <stddef.h>
 
 #define lstate_c
-#define LUA_CORE
+#define INLUA_CORE
 
 #include "inlua.h"
 
@@ -24,22 +24,22 @@
 #include "ltm.h"
 
 
-#define state_size(x)	(sizeof(x) + LUAI_EXTRASPACE)
-#define fromstate(l)	(cast(lu_byte *, (l)) - LUAI_EXTRASPACE)
-#define tostate(l)   (cast(lua_State *, cast(lu_byte *, l) + LUAI_EXTRASPACE))
+#define state_size(x)	(sizeof(x) + INLUAI_EXTRASPACE)
+#define fromstate(l)	(cast(lu_byte *, (l)) - INLUAI_EXTRASPACE)
+#define tostate(l)   (cast(inlua_State *, cast(lu_byte *, l) + INLUAI_EXTRASPACE))
 
 
 /*
 ** Main thread combines a thread state and the global state
 */
 typedef struct LG {
-  lua_State l;
+  inlua_State l;
   global_State g;
 } LG;
   
 
 
-static void stack_init (lua_State *L1, lua_State *L) {
+static void stack_init (inlua_State *L1, inlua_State *L) {
   /* initialize CallInfo array */
   L1->base_ci = luaM_newvector(L, BASIC_CI_SIZE, CallInfo);
   L1->ci = L1->base_ci;
@@ -54,11 +54,11 @@ static void stack_init (lua_State *L1, lua_State *L) {
   L1->ci->func = L1->top;
   setnilvalue(L1->top++);  /* `function' entry for this `ci' */
   L1->base = L1->ci->base = L1->top;
-  L1->ci->top = L1->top + LUA_MINSTACK;
+  L1->ci->top = L1->top + INLUA_MINSTACK;
 }
 
 
-static void freestack (lua_State *L, lua_State *L1) {
+static void freestack (inlua_State *L, inlua_State *L1) {
   luaM_freearray(L, L1->base_ci, L1->size_ci, CallInfo);
   luaM_freearray(L, L1->stack, L1->stacksize, TValue);
 }
@@ -67,7 +67,7 @@ static void freestack (lua_State *L, lua_State *L1) {
 /*
 ** open parts that may cause memory-allocation errors
 */
-static void f_luaopen (lua_State *L, void *ud) {
+static void f_luaopen (inlua_State *L, void *ud) {
   global_State *g = G(L);
   UNUSED(ud);
   stack_init(L, L);  /* init stack */
@@ -81,7 +81,7 @@ static void f_luaopen (lua_State *L, void *ud) {
 }
 
 
-static void preinit_state (lua_State *L, global_State *g) {
+static void preinit_state (inlua_State *L, global_State *g) {
   G(L) = g;
   L->stack = NULL;
   L->stacksize = 0;
@@ -102,23 +102,23 @@ static void preinit_state (lua_State *L, global_State *g) {
 }
 
 
-static void close_state (lua_State *L) {
+static void close_state (inlua_State *L) {
   global_State *g = G(L);
   luaF_close(L, L->stack);  /* close all upvalues for this thread */
   luaC_freeall(L);  /* collect all objects */
-  lua_assert(g->rootgc == obj2gco(L));
-  lua_assert(g->strt.nuse == 0);
+  inlua_assert(g->rootgc == obj2gco(L));
+  inlua_assert(g->strt.nuse == 0);
   luaM_freearray(L, G(L)->strt.hash, G(L)->strt.size, TString *);
   luaZ_freebuffer(L, &g->buff);
   freestack(L, L);
-  lua_assert(g->totalbytes == sizeof(LG));
+  inlua_assert(g->totalbytes == sizeof(LG));
   (*g->frealloc)(g->ud, fromstate(L), state_size(LG), 0);
 }
 
 
-lua_State *luaE_newthread (lua_State *L) {
-  lua_State *L1 = tostate(luaM_malloc(L, state_size(lua_State)));
-  luaC_link(L, obj2gco(L1), LUA_TTHREAD);
+inlua_State *luaE_newthread (inlua_State *L) {
+  inlua_State *L1 = tostate(luaM_malloc(L, state_size(inlua_State)));
+  luaC_link(L, obj2gco(L1), INLUA_TTHREAD);
   preinit_state(L1, G(L));
   stack_init(L1, L);  /* init stack */
   setobj2n(L, gt(L1), gt(L));  /* share table of globals */
@@ -126,30 +126,30 @@ lua_State *luaE_newthread (lua_State *L) {
   L1->basehookcount = L->basehookcount;
   L1->hook = L->hook;
   resethookcount(L1);
-  lua_assert(iswhite(obj2gco(L1)));
+  inlua_assert(iswhite(obj2gco(L1)));
   return L1;
 }
 
 
-void luaE_freethread (lua_State *L, lua_State *L1) {
+void luaE_freethread (inlua_State *L, inlua_State *L1) {
   luaF_close(L1, L1->stack);  /* close all upvalues for this thread */
-  lua_assert(L1->openupval == NULL);
-  luai_userstatefree(L1);
+  inlua_assert(L1->openupval == NULL);
+  inluai_userstatefree(L1);
   freestack(L, L1);
-  luaM_freemem(L, fromstate(L1), state_size(lua_State));
+  luaM_freemem(L, fromstate(L1), state_size(inlua_State));
 }
 
 
-LUA_API lua_State *lua_newstate (lua_Alloc f, void *ud) {
+INLUA_API inlua_State *inlua_newstate (inlua_Alloc f, void *ud) {
   int i;
-  lua_State *L;
+  inlua_State *L;
   global_State *g;
   void *l = (*f)(ud, NULL, 0, state_size(LG));
   if (l == NULL) return NULL;
   L = tostate(l);
   g = &((LG *)L)->g;
   L->next = NULL;
-  L->tt = LUA_TTHREAD;
+  L->tt = INLUA_TTHREAD;
   g->currentwhite = bit2mask(WHITE0BIT, FIXEDBIT);
   L->marked = luaC_white(g);
   set2bits(L->marked, FIXEDBIT, SFIXEDBIT);
@@ -175,8 +175,8 @@ LUA_API lua_State *lua_newstate (lua_Alloc f, void *ud) {
   g->weak = NULL;
   g->tmudata = NULL;
   g->totalbytes = sizeof(LG);
-  g->gcpause = LUAI_GCPAUSE;
-  g->gcstepmul = LUAI_GCMUL;
+  g->gcpause = INLUAI_GCPAUSE;
+  g->gcstepmul = INLUAI_GCMUL;
   g->gcdept = 0;
   for (i=0; i<NUM_TAGS; i++) g->mt[i] = NULL;
   if (luaD_rawrunprotected(L, f_luaopen, NULL) != 0) {
@@ -185,18 +185,18 @@ LUA_API lua_State *lua_newstate (lua_Alloc f, void *ud) {
     L = NULL;
   }
   else
-    luai_userstateopen(L);
+    inluai_userstateopen(L);
   return L;
 }
 
 
-static void callallgcTM (lua_State *L, void *ud) {
+static void callallgcTM (inlua_State *L, void *ud) {
   UNUSED(ud);
   luaC_callGCTM(L);  /* call GC metamethods for all udata */
 }
 
 
-LUA_API void lua_close (lua_State *L) {
+INLUA_API void inlua_close (inlua_State *L) {
   L = G(L)->mainthread;  /* only the main thread can be closed */
   lua_lock(L);
   luaF_close(L, L->stack);  /* close all upvalues for this thread */
@@ -207,8 +207,8 @@ LUA_API void lua_close (lua_State *L) {
     L->base = L->top = L->ci->base;
     L->nCcalls = L->baseCcalls = 0;
   } while (luaD_rawrunprotected(L, callallgcTM, NULL) != 0);
-  lua_assert(G(L)->tmudata == NULL);
-  luai_userstateclose(L);
+  inlua_assert(G(L)->tmudata == NULL);
+  inluai_userstateclose(L);
   close_state(L);
 }
 

@@ -5,8 +5,8 @@
 */
 
 
-#ifndef lauxlib_h
-#define lauxlib_h
+#ifndef inlauxlib_h
+#define inlauxlib_h
 
 
 #include <stddef.h>
@@ -15,77 +15,77 @@
 #include "inlua.h"
 
 
-#if defined(LUA_COMPAT_GETN)
-LUALIB_API int (luaL_getn) (lua_State *L, int t);
-LUALIB_API void (luaL_setn) (lua_State *L, int t, int n);
+#if defined(INLUA_COMPAT_GETN)
+INLUALIB_API int (inluaL_getn) (inlua_State *L, int t);
+INLUALIB_API void (inluaL_setn) (inlua_State *L, int t, int n);
 #else
-#define luaL_getn(L,i)          ((int)lua_objlen(L, i))
-#define luaL_setn(L,i,j)        ((void)0)  /* no op! */
+#define inluaL_getn(L,i)          ((int)inlua_objlen(L, i))
+#define inluaL_setn(L,i,j)        ((void)0)  /* no op! */
 #endif
 
-#if defined(LUA_COMPAT_OPENLIB)
-#define luaI_openlib	luaL_openlib
+#if defined(INLUA_COMPAT_OPENLIB)
+#define inluaI_openlib	inluaL_openlib
 #endif
 
 
 /* extra error code for `luaL_load' */
-#define LUA_ERRFILE     (LUA_ERRERR+1)
+#define INLUA_ERRFILE     (INLUA_ERRERR+1)
 
 
-typedef struct luaL_Reg {
+typedef struct inluaL_Reg {
   const char *name;
-  lua_CFunction func;
-} luaL_Reg;
+  inlua_CFunction func;
+} inluaL_Reg;
 
 
 
-LUALIB_API void (luaI_openlib) (lua_State *L, const char *libname,
-                                const luaL_Reg *l, int nup);
-LUALIB_API void (luaL_register) (lua_State *L, const char *libname,
-                                const luaL_Reg *l);
-LUALIB_API int (luaL_getmetafield) (lua_State *L, int obj, const char *e);
-LUALIB_API int (luaL_callmeta) (lua_State *L, int obj, const char *e);
-LUALIB_API int (luaL_typerror) (lua_State *L, int narg, const char *tname);
-LUALIB_API int (luaL_argerror) (lua_State *L, int numarg, const char *extramsg);
-LUALIB_API const char *(luaL_checklstring) (lua_State *L, int numArg,
+INLUALIB_API void (inluaI_openlib) (inlua_State *L, const char *libname,
+                                const inluaL_Reg *l, int nup);
+INLUALIB_API void (inluaL_register) (inlua_State *L, const char *libname,
+                                const inluaL_Reg *l);
+INLUALIB_API int (inluaL_getmetafield) (inlua_State *L, int obj, const char *e);
+INLUALIB_API int (inluaL_callmeta) (inlua_State *L, int obj, const char *e);
+INLUALIB_API int (inluaL_typerror) (inlua_State *L, int narg, const char *tname);
+INLUALIB_API int (inluaL_argerror) (inlua_State *L, int numarg, const char *extramsg);
+INLUALIB_API const char *(inluaL_checklstring) (inlua_State *L, int numArg,
                                                           size_t *l);
-LUALIB_API const char *(luaL_optlstring) (lua_State *L, int numArg,
+INLUALIB_API const char *(inluaL_optlstring) (inlua_State *L, int numArg,
                                           const char *def, size_t *l);
-LUALIB_API lua_Number (luaL_checknumber) (lua_State *L, int numArg);
-LUALIB_API lua_Number (luaL_optnumber) (lua_State *L, int nArg, lua_Number def);
+INLUALIB_API inlua_Number (inluaL_checknumber) (inlua_State *L, int numArg);
+INLUALIB_API inlua_Number (inluaL_optnumber) (inlua_State *L, int nArg, inlua_Number def);
 
-LUALIB_API lua_Integer (luaL_checkinteger) (lua_State *L, int numArg);
-LUALIB_API lua_Integer (luaL_optinteger) (lua_State *L, int nArg,
-                                          lua_Integer def);
+INLUALIB_API inlua_Integer (inluaL_checkinteger) (inlua_State *L, int numArg);
+INLUALIB_API inlua_Integer (inluaL_optinteger) (inlua_State *L, int nArg,
+                                          inlua_Integer def);
 
-LUALIB_API void (luaL_checkstack) (lua_State *L, int sz, const char *msg);
-LUALIB_API void (luaL_checktype) (lua_State *L, int narg, int t);
-LUALIB_API void (luaL_checkany) (lua_State *L, int narg);
+INLUALIB_API void (inluaL_checkstack) (inlua_State *L, int sz, const char *msg);
+INLUALIB_API void (inluaL_checktype) (inlua_State *L, int narg, int t);
+INLUALIB_API void (inluaL_checkany) (inlua_State *L, int narg);
 
-LUALIB_API int   (luaL_newmetatable) (lua_State *L, const char *tname);
-LUALIB_API void *(luaL_checkudata) (lua_State *L, int ud, const char *tname);
+INLUALIB_API int   (inluaL_newmetatable) (inlua_State *L, const char *tname);
+INLUALIB_API void *(inluaL_checkudata) (inlua_State *L, int ud, const char *tname);
 
-LUALIB_API void (luaL_where) (lua_State *L, int lvl);
-LUALIB_API int (luaL_error) (lua_State *L, const char *fmt, ...);
+INLUALIB_API void (inluaL_where) (inlua_State *L, int lvl);
+INLUALIB_API int (inluaL_error) (inlua_State *L, const char *fmt, ...);
 
-LUALIB_API int (luaL_checkoption) (lua_State *L, int narg, const char *def,
+INLUALIB_API int (inluaL_checkoption) (inlua_State *L, int narg, const char *def,
                                    const char *const lst[]);
 
-LUALIB_API int (luaL_ref) (lua_State *L, int t);
-LUALIB_API void (luaL_unref) (lua_State *L, int t, int ref);
+INLUALIB_API int (inluaL_ref) (inlua_State *L, int t);
+INLUALIB_API void (inluaL_unref) (inlua_State *L, int t, int ref);
 
-LUALIB_API int (luaL_loadfile) (lua_State *L, const char *filename);
-LUALIB_API int (luaL_loadbuffer) (lua_State *L, const char *buff, size_t sz,
+INLUALIB_API int (inluaL_loadfile) (inlua_State *L, const char *filename);
+INLUALIB_API int (inluaL_loadbuffer) (inlua_State *L, const char *buff, size_t sz,
                                   const char *name);
-LUALIB_API int (luaL_loadstring) (lua_State *L, const char *s);
+INLUALIB_API int (inluaL_loadstring) (inlua_State *L, const char *s);
 
-LUALIB_API lua_State *(luaL_newstate) (void);
+INLUALIB_API inlua_State *(inluaL_newstate) (void);
 
 
-LUALIB_API const char *(luaL_gsub) (lua_State *L, const char *s, const char *p,
+INLUALIB_API const char *(inluaL_gsub) (inlua_State *L, const char *s, const char *p,
                                                   const char *r);
 
-LUALIB_API const char *(luaL_findtable) (lua_State *L, int idx,
+INLUALIB_API const char *(inluaL_findtable) (inlua_State *L, int idx,
                                          const char *fname, int szhint);
 
 
@@ -97,26 +97,26 @@ LUALIB_API const char *(luaL_findtable) (lua_State *L, int idx,
 ** ===============================================================
 */
 
-#define luaL_argcheck(L, cond,numarg,extramsg)	\
-		((void)((cond) || luaL_argerror(L, (numarg), (extramsg))))
-#define luaL_checkstring(L,n)	(luaL_checklstring(L, (n), NULL))
-#define luaL_optstring(L,n,d)	(luaL_optlstring(L, (n), (d), NULL))
-#define luaL_checkint(L,n)	((int)luaL_checkinteger(L, (n)))
-#define luaL_optint(L,n,d)	((int)luaL_optinteger(L, (n), (d)))
-#define luaL_checklong(L,n)	((long)luaL_checkinteger(L, (n)))
-#define luaL_optlong(L,n,d)	((long)luaL_optinteger(L, (n), (d)))
+#define inluaL_argcheck(L, cond,numarg,extramsg)	\
+		((void)((cond) || inluaL_argerror(L, (numarg), (extramsg))))
+#define inluaL_checkstring(L,n)	(inluaL_checklstring(L, (n), NULL))
+#define inluaL_optstring(L,n,d)	(inluaL_optlstring(L, (n), (d), NULL))
+#define inluaL_checkint(L,n)	((int)inluaL_checkinteger(L, (n)))
+#define inluaL_optint(L,n,d)	((int)inluaL_optinteger(L, (n), (d)))
+#define inluaL_checklong(L,n)	((long)inluaL_checkinteger(L, (n)))
+#define inluaL_optlong(L,n,d)	((long)inluaL_optinteger(L, (n), (d)))
 
-#define luaL_typename(L,i)	lua_typename(L, lua_type(L,(i)))
+#define inluaL_typename(L,i)	inlua_typename(L, inlua_type(L,(i)))
 
-#define luaL_dofile(L, fn) \
-	(luaL_loadfile(L, fn) || lua_pcall(L, 0, LUA_MULTRET, 0))
+#define inluaL_dofile(L, fn) \
+	(inluaL_loadfile(L, fn) || inlua_pcall(L, 0, INLUA_MULTRET, 0))
 
-#define luaL_dostring(L, s) \
-	(luaL_loadstring(L, s) || lua_pcall(L, 0, LUA_MULTRET, 0))
+#define inluaL_dostring(L, s) \
+	(inluaL_loadstring(L, s) || inlua_pcall(L, 0, INLUA_MULTRET, 0))
 
-#define luaL_getmetatable(L,n)	(lua_getfield(L, LUA_REGISTRYINDEX, (n)))
+#define inluaL_getmetatable(L,n)	(inlua_getfield(L, INLUA_REGISTRYINDEX, (n)))
 
-#define luaL_opt(L,f,n,d)	(lua_isnoneornil(L,(n)) ? (d) : f(L,(n)))
+#define inluaL_opt(L,f,n,d)	(inlua_isnoneornil(L,(n)) ? (d) : f(L,(n)))
 
 /*
 ** {======================================================
@@ -126,28 +126,28 @@ LUALIB_API const char *(luaL_findtable) (lua_State *L, int idx,
 
 
 
-typedef struct luaL_Buffer {
+typedef struct inluaL_Buffer {
   char *p;			/* current position in buffer */
   int lvl;  /* number of strings in the stack (level) */
-  lua_State *L;
-  char buffer[LUAL_BUFFERSIZE];
-} luaL_Buffer;
+  inlua_State *L;
+  char buffer[INLUAL_BUFFERSIZE];
+} inluaL_Buffer;
 
-#define luaL_addchar(B,c) \
-  ((void)((B)->p < ((B)->buffer+LUAL_BUFFERSIZE) || luaL_prepbuffer(B)), \
+#define inluaL_addchar(B,c) \
+  ((void)((B)->p < ((B)->buffer+INLUAL_BUFFERSIZE) || inluaL_prepbuffer(B)), \
    (*(B)->p++ = (char)(c)))
 
 /* compatibility only */
-#define luaL_putchar(B,c)	luaL_addchar(B,c)
+#define inluaL_putchar(B,c)	inluaL_addchar(B,c)
 
-#define luaL_addsize(B,n)	((B)->p += (n))
+#define inluaL_addsize(B,n)	((B)->p += (n))
 
-LUALIB_API void (luaL_buffinit) (lua_State *L, luaL_Buffer *B);
-LUALIB_API char *(luaL_prepbuffer) (luaL_Buffer *B);
-LUALIB_API void (luaL_addlstring) (luaL_Buffer *B, const char *s, size_t l);
-LUALIB_API void (luaL_addstring) (luaL_Buffer *B, const char *s);
-LUALIB_API void (luaL_addvalue) (luaL_Buffer *B);
-LUALIB_API void (luaL_pushresult) (luaL_Buffer *B);
+INLUALIB_API void (inluaL_buffinit) (inlua_State *L, inluaL_Buffer *B);
+INLUALIB_API char *(inluaL_prepbuffer) (inluaL_Buffer *B);
+INLUALIB_API void (inluaL_addlstring) (inluaL_Buffer *B, const char *s, size_t l);
+INLUALIB_API void (inluaL_addstring) (inluaL_Buffer *B, const char *s);
+INLUALIB_API void (inluaL_addvalue) (inluaL_Buffer *B);
+INLUALIB_API void (inluaL_pushresult) (inluaL_Buffer *B);
 
 
 /* }====================================================== */
@@ -156,18 +156,18 @@ LUALIB_API void (luaL_pushresult) (luaL_Buffer *B);
 /* compatibility with ref system */
 
 /* pre-defined references */
-#define LUA_NOREF       (-2)
-#define LUA_REFNIL      (-1)
+#define INLUA_NOREF       (-2)
+#define INLUA_REFNIL      (-1)
 
-#define lua_ref(L,lock) ((lock) ? luaL_ref(L, LUA_REGISTRYINDEX) : \
-      (lua_pushstring(L, "unlocked references are obsolete"), lua_error(L), 0))
+#define inlua_ref(L,lock) ((lock) ? inluaL_ref(L, INLUA_REGISTRYINDEX) : \
+      (inlua_pushstring(L, "unlocked references are obsolete"), inlua_error(L), 0))
 
-#define lua_unref(L,ref)        luaL_unref(L, LUA_REGISTRYINDEX, (ref))
+#define inlua_unref(L,ref)        inluaL_unref(L, INLUA_REGISTRYINDEX, (ref))
 
-#define lua_getref(L,ref)       lua_rawgeti(L, LUA_REGISTRYINDEX, (ref))
+#define inlua_getref(L,ref)       inlua_rawgeti(L, INLUA_REGISTRYINDEX, (ref))
 
 
-#define luaL_reg	luaL_Reg
+#define inluaL_reg	inluaL_Reg
 
 #endif
 

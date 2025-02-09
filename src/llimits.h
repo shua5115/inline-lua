@@ -15,11 +15,11 @@
 #include "inlua.h"
 
 
-typedef LUAI_UINT32 lu_int32;
+typedef INLUAI_UINT32 lu_int32;
 
-typedef LUAI_UMEM lu_mem;
+typedef INLUAI_UMEM lu_mem;
 
-typedef LUAI_MEM l_mem;
+typedef INLUAI_MEM l_mem;
 
 
 
@@ -44,24 +44,24 @@ typedef unsigned char lu_byte;
 
 
 /* type to ensure maximum alignment */
-typedef LUAI_USER_ALIGNMENT_T L_Umaxalign;
+typedef INLUAI_USER_ALIGNMENT_T L_Umaxalign;
 
 
-/* result of a `usual argument conversion' over lua_Number */
-typedef LUAI_UACNUMBER l_uacNumber;
+/* result of a `usual argument conversion' over inlua_Number */
+typedef INLUAI_UACNUMBER l_uacNumber;
 
 
 /* internal assertions for in-house debugging */
-#ifdef lua_assert
+#ifdef inlua_assert
 
-#define check_exp(c,e)		(lua_assert(c), (e))
-#define api_check(l,e)		lua_assert(e)
+#define check_exp(c,e)		(inlua_assert(c), (e))
+#define api_check(l,e)		inlua_assert(e)
 
 #else
 
-#define lua_assert(c)		((void)0)
+#define inlua_assert(c)		((void)0)
 #define check_exp(c,e)		(e)
-#define api_check		luai_apicheck
+#define api_check		inluai_apicheck
 
 #endif
 
@@ -76,7 +76,7 @@ typedef LUAI_UACNUMBER l_uacNumber;
 #endif
 
 #define cast_byte(i)	cast(lu_byte, (i))
-#define cast_num(i)	cast(lua_Number, (i))
+#define cast_num(i)	cast(inlua_Number, (i))
 #define cast_int(i)	cast(int, (i))
 
 

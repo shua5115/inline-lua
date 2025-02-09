@@ -11,7 +11,7 @@
 #include <string.h>
 
 #define lobject_c
-#define LUA_CORE
+#define INLUA_CORE
 
 #include "inlua.h"
 
@@ -24,7 +24,7 @@
 
 
 
-const TValue luaO_nilobject_ = {{NULL}, LUA_TNIL};
+const TValue luaO_nilobject_ = {{NULL}, INLUA_TNIL};
 
 
 /*
@@ -72,24 +72,24 @@ int luaO_log2 (unsigned int x) {
 int luaO_rawequalObj (const TValue *t1, const TValue *t2) {
   if (ttype(t1) != ttype(t2)) return 0;
   else switch (ttype(t1)) {
-    case LUA_TNIL:
+    case INLUA_TNIL:
       return 1;
-    case LUA_TNUMBER:
-      return luai_numeq(nvalue(t1), nvalue(t2));
-    case LUA_TBOOLEAN:
+    case INLUA_TNUMBER:
+      return inluai_numeq(nvalue(t1), nvalue(t2));
+    case INLUA_TBOOLEAN:
       return bvalue(t1) == bvalue(t2);  /* boolean true must be 1 !! */
-    case LUA_TLIGHTUSERDATA:
+    case INLUA_TLIGHTUSERDATA:
       return pvalue(t1) == pvalue(t2);
     default:
-      lua_assert(iscollectable(t1));
+      inlua_assert(iscollectable(t1));
       return gcvalue(t1) == gcvalue(t2);
   }
 }
 
 
-int luaO_str2d (const char *s, lua_Number *result) {
+int luaO_str2d (const char *s, inlua_Number *result) {
   char *endptr;
-  *result = lua_str2number(s, &endptr);
+  *result = inlua_str2number(s, &endptr);
   if (endptr == s) return 0;  /* conversion failed */
   if (*endptr == 'x' || *endptr == 'X')  /* maybe an hexadecimal constant? */
     *result = cast_num(strtoul(s, &endptr, 16));
@@ -101,14 +101,14 @@ int luaO_str2d (const char *s, lua_Number *result) {
 
 
 
-static void pushstr (lua_State *L, const char *str) {
+static void pushstr (inlua_State *L, const char *str) {
   setsvalue2s(L, L->top, luaS_new(L, str));
   incr_top(L);
 }
 
 
 /* this function handles only `%d', `%c', %f, %p, and `%s' formats */
-const char *luaO_pushvfstring (lua_State *L, const char *fmt, va_list argp) {
+const char *luaO_pushvfstring (inlua_State *L, const char *fmt, va_list argp) {
   int n = 1;
   pushstr(L, "");
   for (;;) {
@@ -169,7 +169,7 @@ const char *luaO_pushvfstring (lua_State *L, const char *fmt, va_list argp) {
 }
 
 
-const char *luaO_pushfstring (lua_State *L, const char *fmt, ...) {
+const char *luaO_pushfstring (inlua_State *L, const char *fmt, ...) {
   const char *msg;
   va_list argp;
   va_start(argp, fmt);

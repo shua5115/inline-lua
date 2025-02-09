@@ -5,48 +5,48 @@
 */
 
 
-#ifndef lualib_h
-#define lualib_h
+#ifndef inlualib_h
+#define inlualib_h
 
 #include "inlua.h"
 
 
 /* Key to file-handle type */
-#define LUA_FILEHANDLE		"FILE*"
+#define INLUA_FILEHANDLE		"FILE*"
 
 
-#define LUA_COLIBNAME	"coroutine"
-LUALIB_API int (luaopen_base) (lua_State *L);
+#define INLUA_COLIBNAME	"coroutine"
+INLUALIB_API int (inluaopen_base) (inlua_State *L);
 
-#define LUA_TABLIBNAME	"table"
-LUALIB_API int (luaopen_table) (lua_State *L);
+#define INLUA_TABLIBNAME	"table"
+INLUALIB_API int (inluaopen_table) (inlua_State *L);
 
-#define LUA_IOLIBNAME	"io"
-LUALIB_API int (luaopen_io) (lua_State *L);
+#define INLUA_IOLIBNAME	"io"
+INLUALIB_API int (inluaopen_io) (inlua_State *L);
 
-#define LUA_OSLIBNAME	"os"
-LUALIB_API int (luaopen_os) (lua_State *L);
+#define INLUA_OSLIBNAME	"os"
+INLUALIB_API int (inluaopen_os) (inlua_State *L);
 
-#define LUA_STRLIBNAME	"string"
-LUALIB_API int (luaopen_string) (lua_State *L);
+#define INLUA_STRLIBNAME	"string"
+INLUALIB_API int (inluaopen_string) (inlua_State *L);
 
-#define LUA_MATHLIBNAME	"math"
-LUALIB_API int (luaopen_math) (lua_State *L);
+#define INLUA_MATHLIBNAME	"math"
+INLUALIB_API int (inluaopen_math) (inlua_State *L);
 
-#define LUA_DBLIBNAME	"debug"
-LUALIB_API int (luaopen_debug) (lua_State *L);
+#define INLUA_DBLIBNAME	"debug"
+INLUALIB_API int (inluaopen_debug) (inlua_State *L);
 
-#define LUA_LOADLIBNAME	"package"
-LUALIB_API int (luaopen_package) (lua_State *L);
+#define INLUA_LOADLIBNAME	"package"
+INLUALIB_API int (inluaopen_package) (inlua_State *L);
 
 
 /* open all previous libraries */
-LUALIB_API void (luaL_openlibs) (lua_State *L); 
+INLUALIB_API void (inluaL_openlibs) (inlua_State *L); 
 
 
 
-#ifndef lua_assert
-#define lua_assert(x)	((void)0)
+#ifndef inlua_assert
+#define inlua_assert(x)	((void)0)
 #endif
 
 

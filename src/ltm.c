@@ -8,7 +8,7 @@
 #include <string.h>
 
 #define ltm_c
-#define LUA_CORE
+#define INLUA_CORE
 
 #include "inlua.h"
 
@@ -27,7 +27,7 @@ const char *const luaT_typenames[] = {
 };
 
 
-void luaT_init (lua_State *L) {
+void luaT_init (inlua_State *L) {
   static const char *const luaT_eventname[] = {  /* ORDER TM */
     "__index", "__newindex",
     "__gc", "__mode", "__eq",
@@ -49,7 +49,7 @@ void luaT_init (lua_State *L) {
 */
 const TValue *luaT_gettm (Table *events, TMS event, TString *ename) {
   const TValue *tm = luaH_getstr(events, ename);
-  lua_assert(event <= TM_EQ);
+  inlua_assert(event <= TM_EQ);
   if (ttisnil(tm)) {  /* no tag method? */
     events->flags |= cast_byte(1u<<event);  /* cache this fact */
     return NULL;
@@ -58,13 +58,13 @@ const TValue *luaT_gettm (Table *events, TMS event, TString *ename) {
 }
 
 
-const TValue *luaT_gettmbyobj (lua_State *L, const TValue *o, TMS event) {
+const TValue *luaT_gettmbyobj (inlua_State *L, const TValue *o, TMS event) {
   Table *mt;
   switch (ttype(o)) {
-    case LUA_TTABLE:
+    case INLUA_TTABLE:
       mt = hvalue(o)->metatable;
       break;
-    case LUA_TUSERDATA:
+    case INLUA_TUSERDATA:
       mt = uvalue(o)->metatable;
       break;
     default:

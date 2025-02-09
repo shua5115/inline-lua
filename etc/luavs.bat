@@ -9,12 +9,12 @@
 @set MYMT=mt /nologo
 
 cd src
-%MYCOMPILE% /DLUA_BUILD_AS_DLL l*.c
+%MYCOMPILE% /DINLUA_BUILD_AS_DLL l*.c
 del lua.obj luac.obj
 %MYLINK% /DLL /out:lua51.dll l*.obj
 if exist lua51.dll.manifest^
   %MYMT% -manifest lua51.dll.manifest -outputresource:lua51.dll;2
-%MYCOMPILE% /DLUA_BUILD_AS_DLL lua.c
+%MYCOMPILE% /DINLUA_BUILD_AS_DLL lua.c
 %MYLINK% /out:lua.exe lua.obj lua51.lib
 if exist lua.exe.manifest^
   %MYMT% -manifest lua.exe.manifest -outputresource:lua.exe

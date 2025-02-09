@@ -11,6 +11,6 @@
 #include "lobject.h"
 
 
-LUAI_FUNC void luaA_pushobject (lua_State *L, const TValue *o);
+INLUAI_FUNC void luaA_pushobject (inlua_State *L, const TValue *o);
 
 #endif

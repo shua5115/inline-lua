@@ -10,7 +10,7 @@
 #include <string.h>
 
 #define llex_c
-#define LUA_CORE
+#define INLUA_CORE
 
 #include "inlua.h"
 
@@ -79,12 +79,12 @@ static void save (LexState *ls, int c) {
 }
 
 
-void luaX_init (lua_State *L) {
+void luaX_init (inlua_State *L) {
   int i;
   for (i=0; i<NUM_RESERVED; i++) {
     TString *ts = luaS_new(L, luaX_tokens[i]);
     luaS_fix(ts);  /* reserved words are never collected */
-    lua_assert(strlen(luaX_tokens[i])+1 <= TOKEN_LEN);
+    inlua_assert(strlen(luaX_tokens[i])+1 <= TOKEN_LEN);
     ts->tsv.reserved = cast_byte(i+1);  /* reserved word */
   }
 }
@@ -95,7 +95,7 @@ void luaX_init (lua_State *L) {
 
 const char *luaX_token2str (LexState *ls, int token) {
   if (token < FIRST_RESERVED) {
-    lua_assert(token == cast(unsigned char, token));
+    inlua_assert(token == cast(unsigned char, token));
     return (iscntrl(token)) ? luaO_pushfstring(ls->L, "char(%d)", token) :
                               luaO_pushfstring(ls->L, "%c", token);
   }
@@ -122,8 +122,8 @@ void luaX_lexerror (LexState *ls, const char *msg, int token) {
   luaO_chunkid(buff, getstr(ls->source), MAXSRC);
   msg = luaO_pushfstring(ls->L, "%s:%d: %s", buff, ls->linenumber, msg);
   if (token)
-    luaO_pushfstring(ls->L, "%s near " LUA_QS, msg, txtToken(ls, token));
-  luaD_throw(ls->L, LUA_ERRSYNTAX);
+    luaO_pushfstring(ls->L, "%s near " INLUA_QS, msg, txtToken(ls, token));
+  luaD_throw(ls->L, INLUA_ERRSYNTAX);
 }
 
 
@@ -133,7 +133,7 @@ void luaX_syntaxerror (LexState *ls, const char *msg) {
 
 
 TString *luaX_newstring (LexState *ls, const char *str, size_t l) {
-  lua_State *L = ls->L;
+  inlua_State *L = ls->L;
   TString *ts = luaS_newlstr(L, str, l);
   TValue *o = luaH_setstr(L, ls->fs->h, ts);  /* entry for `str' */
   if (ttisnil(o)) {
@@ -146,7 +146,7 @@ TString *luaX_newstring (LexState *ls, const char *str, size_t l) {
 
 static void inclinenumber (LexState *ls) {
   int old = ls->current;
-  lua_assert(currIsNewline(ls));
+  inlua_assert(currIsNewline(ls));
   next(ls);  /* skip `\n' or `\r' */
   if (currIsNewline(ls) && ls->current != old)
     next(ls);  /* skip `\n\r' or `\r\n' */
@@ -155,7 +155,7 @@ static void inclinenumber (LexState *ls) {
 }
 
 
-void luaX_setinput (lua_State *L, LexState *ls, ZIO *z, TString *source) {
+void luaX_setinput (inlua_State *L, LexState *ls, ZIO *z, TString *source) {
   ls->decpoint = '.';
   ls->L = L;
   ls->lookahead.token = TK_EOS;  /* no look-ahead token */
@@ -208,9 +208,9 @@ static void trydecpoint (LexState *ls, SemInfo *seminfo) {
 }
 
 
-/* LUA_NUMBER */
+/* INLUA_NUMBER */
 static void read_numeral (LexState *ls, SemInfo *seminfo) {
-  lua_assert(isdigit(ls->current));
+  inlua_assert(isdigit(ls->current));
   do {
     save_and_next(ls);
   } while (isdigit(ls->current) || ls->current == '.');
@@ -231,7 +231,7 @@ static void read_numeral (LexState *ls, SemInfo *seminfo) {
 static int skip_sep (LexState *ls) {
   int count = 0;
   int s = ls->current;
-  lua_assert(s == '[' || s == ']');
+  inlua_assert(s == '[' || s == ']');
   save_and_next(ls);
   while (ls->current == '=') {
     save_and_next(ls);
@@ -253,12 +253,12 @@ static void read_long_string (LexState *ls, SemInfo *seminfo, int sep) {
         luaX_lexerror(ls, (seminfo) ? "unfinished long string" :
                                    "unfinished long comment", TK_EOS);
         break;  /* to avoid warnings */
-#if defined(LUA_COMPAT_LSTR)
+#if defined(INLUA_COMPAT_LSTR)
       case '[': {
         if (skip_sep(ls) == sep) {
           save_and_next(ls);  /* skip 2nd `[' */
           cont++;
-#if LUA_COMPAT_LSTR == 1
+#if INLUA_COMPAT_LSTR == 1
           if (sep == 0)
             luaX_lexerror(ls, "nesting of [[...]] is deprecated", '[');
 #endif
@@ -269,7 +269,7 @@ static void read_long_string (LexState *ls, SemInfo *seminfo, int sep) {
       case ']': {
         if (skip_sep(ls) == sep) {
           save_and_next(ls);  /* skip 2nd `]' */
-#if defined(LUA_COMPAT_LSTR) && LUA_COMPAT_LSTR == 2
+#if defined(INLUA_COMPAT_LSTR) && INLUA_COMPAT_LSTR == 2
           cont--;
           if (sep == 0 && cont >= 0) break;
 #endif
@@ -445,7 +445,7 @@ static int llex (LexState *ls, SemInfo *seminfo) {
       }
       default: {
         if (isspace(ls->current)) {
-          lua_assert(!currIsNewline(ls));
+          inlua_assert(!currIsNewline(ls));
           next(ls);
           continue;
         }
@@ -491,7 +491,7 @@ void luaX_next (LexState *ls) {
 
 
 void luaX_lookahead (LexState *ls) {
-  lua_assert(ls->lookahead.token == TK_EOS);
+  inlua_assert(ls->lookahead.token == TK_EOS);
   ls->lookahead.token = llex(ls, &ls->lookahead.seminfo);
 }
 

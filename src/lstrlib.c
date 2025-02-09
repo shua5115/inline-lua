@@ -12,7 +12,7 @@
 #include <string.h>
 
 #define lstrlib_c
-#define LUA_LIB
+#define INLUA_LIB
 
 #include "inlua.h"
 
@@ -25,10 +25,10 @@
 
 
 
-static int str_len (lua_State *L) {
+static int str_len (inlua_State *L) {
   size_t l;
-  luaL_checklstring(L, 1, &l);
-  lua_pushinteger(L, l);
+  inluaL_checklstring(L, 1, &l);
+  inlua_pushinteger(L, l);
   return 1;
 }
 
@@ -40,130 +40,130 @@ static ptrdiff_t posrelat (ptrdiff_t pos, size_t len) {
 }
 
 
-static int str_sub (lua_State *L) {
+static int str_sub (inlua_State *L) {
   size_t l;
-  const char *s = luaL_checklstring(L, 1, &l);
-  ptrdiff_t start = posrelat(luaL_checkinteger(L, 2), l);
-  ptrdiff_t end = posrelat(luaL_optinteger(L, 3, -1), l);
+  const char *s = inluaL_checklstring(L, 1, &l);
+  ptrdiff_t start = posrelat(inluaL_checkinteger(L, 2), l);
+  ptrdiff_t end = posrelat(inluaL_optinteger(L, 3, -1), l);
   if (start < 1) start = 1;
   if (end > (ptrdiff_t)l) end = (ptrdiff_t)l;
   if (start <= end)
-    lua_pushlstring(L, s+start-1, end-start+1);
-  else lua_pushliteral(L, "");
+    inlua_pushlstring(L, s+start-1, end-start+1);
+  else inlua_pushliteral(L, "");
   return 1;
 }
 
-static int str_index (lua_State *L) {
+static int str_index (inlua_State *L) {
   size_t l;
-  const char *s = luaL_checklstring(L, 1, &l);
+  const char *s = inluaL_checklstring(L, 1, &l);
   if (l == 0) {
-    lua_pushliteral(L, "");
+    inlua_pushliteral(L, "");
     return 1;
   }
-  ptrdiff_t idx = luaL_checkinteger(L, 2);
+  ptrdiff_t idx = inluaL_checkinteger(L, 2);
   if (idx < 1 || idx > (ptrdiff_t)l) return 0;
-  lua_pushlstring(L, s+(idx-1), 1);
+  inlua_pushlstring(L, s+(idx-1), 1);
   return 1;
 }
 
-static int str_reverse (lua_State *L) {
+static int str_reverse (inlua_State *L) {
   size_t l;
-  luaL_Buffer b;
-  const char *s = luaL_checklstring(L, 1, &l);
-  luaL_buffinit(L, &b);
-  while (l--) luaL_addchar(&b, s[l]);
-  luaL_pushresult(&b);
+  inluaL_Buffer b;
+  const char *s = inluaL_checklstring(L, 1, &l);
+  inluaL_buffinit(L, &b);
+  while (l--) inluaL_addchar(&b, s[l]);
+  inluaL_pushresult(&b);
   return 1;
 }
 
 
-static int str_lower (lua_State *L) {
-  size_t l;
-  size_t i;
-  luaL_Buffer b;
-  const char *s = luaL_checklstring(L, 1, &l);
-  luaL_buffinit(L, &b);
-  for (i=0; i<l; i++)
-    luaL_addchar(&b, tolower(uchar(s[i])));
-  luaL_pushresult(&b);
-  return 1;
-}
-
-
-static int str_upper (lua_State *L) {
+static int str_lower (inlua_State *L) {
   size_t l;
   size_t i;
-  luaL_Buffer b;
-  const char *s = luaL_checklstring(L, 1, &l);
-  luaL_buffinit(L, &b);
+  inluaL_Buffer b;
+  const char *s = inluaL_checklstring(L, 1, &l);
+  inluaL_buffinit(L, &b);
   for (i=0; i<l; i++)
-    luaL_addchar(&b, toupper(uchar(s[i])));
-  luaL_pushresult(&b);
+    inluaL_addchar(&b, tolower(uchar(s[i])));
+  inluaL_pushresult(&b);
   return 1;
 }
 
-static int str_rep (lua_State *L) {
+
+static int str_upper (inlua_State *L) {
   size_t l;
-  luaL_Buffer b;
-  const char *s = luaL_checklstring(L, 1, &l);
-  int n = luaL_checkint(L, 2);
-  luaL_buffinit(L, &b);
+  size_t i;
+  inluaL_Buffer b;
+  const char *s = inluaL_checklstring(L, 1, &l);
+  inluaL_buffinit(L, &b);
+  for (i=0; i<l; i++)
+    inluaL_addchar(&b, toupper(uchar(s[i])));
+  inluaL_pushresult(&b);
+  return 1;
+}
+
+static int str_rep (inlua_State *L) {
+  size_t l;
+  inluaL_Buffer b;
+  const char *s = inluaL_checklstring(L, 1, &l);
+  int n = inluaL_checkint(L, 2);
+  inluaL_buffinit(L, &b);
   while (n-- > 0)
-    luaL_addlstring(&b, s, l);
-  luaL_pushresult(&b);
+    inluaL_addlstring(&b, s, l);
+  inluaL_pushresult(&b);
   return 1;
 }
 
 
-static int str_byte (lua_State *L) {
+static int str_byte (inlua_State *L) {
   size_t l;
-  const char *s = luaL_checklstring(L, 1, &l);
-  ptrdiff_t posi = posrelat(luaL_optinteger(L, 2, 1), l);
-  ptrdiff_t pose = posrelat(luaL_optinteger(L, 3, posi), l);
+  const char *s = inluaL_checklstring(L, 1, &l);
+  ptrdiff_t posi = posrelat(inluaL_optinteger(L, 2, 1), l);
+  ptrdiff_t pose = posrelat(inluaL_optinteger(L, 3, posi), l);
   int n, i;
   if (posi <= 0) posi = 1;
   if ((size_t)pose > l) pose = l;
   if (posi > pose) return 0;  /* empty interval; return no values */
   n = (int)(pose -  posi + 1);
   if (posi + n <= pose)  /* overflow? */
-    luaL_error(L, "string slice too long");
-  luaL_checkstack(L, n, "string slice too long");
+    inluaL_error(L, "string slice too long");
+  inluaL_checkstack(L, n, "string slice too long");
   for (i=0; i<n; i++)
-    lua_pushinteger(L, uchar(s[posi+i-1]));
+    inlua_pushinteger(L, uchar(s[posi+i-1]));
   return n;
 }
 
 
-static int str_char (lua_State *L) {
-  int n = lua_gettop(L);  /* number of arguments */
+static int str_char (inlua_State *L) {
+  int n = inlua_gettop(L);  /* number of arguments */
   int i;
-  luaL_Buffer b;
-  luaL_buffinit(L, &b);
+  inluaL_Buffer b;
+  inluaL_buffinit(L, &b);
   for (i=1; i<=n; i++) {
-    int c = luaL_checkint(L, i);
-    luaL_argcheck(L, uchar(c) == c, i, "invalid value");
-    luaL_addchar(&b, uchar(c));
+    int c = inluaL_checkint(L, i);
+    inluaL_argcheck(L, uchar(c) == c, i, "invalid value");
+    inluaL_addchar(&b, uchar(c));
   }
-  luaL_pushresult(&b);
+  inluaL_pushresult(&b);
   return 1;
 }
 
 
-static int writer (lua_State *L, const void* b, size_t size, void* B) {
+static int writer (inlua_State *L, const void* b, size_t size, void* B) {
   (void)L;
-  luaL_addlstring((luaL_Buffer*) B, (const char *)b, size);
+  inluaL_addlstring((inluaL_Buffer*) B, (const char *)b, size);
   return 0;
 }
 
 
-static int str_dump (lua_State *L) {
-  luaL_Buffer b;
-  luaL_checktype(L, 1, LUA_TFUNCTION);
-  lua_settop(L, 1);
-  luaL_buffinit(L,&b);
-  if (lua_dump(L, writer, &b) != 0)
-    luaL_error(L, "unable to dump given function");
-  luaL_pushresult(&b);
+static int str_dump (inlua_State *L) {
+  inluaL_Buffer b;
+  inluaL_checktype(L, 1, INLUA_TFUNCTION);
+  inlua_settop(L, 1);
+  inluaL_buffinit(L,&b);
+  if (inlua_dump(L, writer, &b) != 0)
+    inluaL_error(L, "unable to dump given function");
+  inluaL_pushresult(&b);
   return 1;
 }
 
@@ -182,12 +182,12 @@ static int str_dump (lua_State *L) {
 typedef struct MatchState {
   const char *src_init;  /* init of source string */
   const char *src_end;  /* end (`\0') of source string */
-  lua_State *L;
+  inlua_State *L;
   int level;  /* total number of captures (finished or unfinished) */
   struct {
     const char *init;
     ptrdiff_t len;
-  } capture[LUA_MAXCAPTURES];
+  } capture[INLUA_MAXCAPTURES];
 } MatchState;
 
 
@@ -198,7 +198,7 @@ typedef struct MatchState {
 static int check_capture (MatchState *ms, int l) {
   l -= '1';
   if (l < 0 || l >= ms->level || ms->capture[l].len == CAP_UNFINISHED)
-    return luaL_error(ms->L, "invalid capture index");
+    return inluaL_error(ms->L, "invalid capture index");
   return l;
 }
 
@@ -207,7 +207,7 @@ static int capture_to_close (MatchState *ms) {
   int level = ms->level;
   for (level--; level>=0; level--)
     if (ms->capture[level].len == CAP_UNFINISHED) return level;
-  return luaL_error(ms->L, "invalid pattern capture");
+  return inluaL_error(ms->L, "invalid pattern capture");
 }
 
 
@@ -215,14 +215,14 @@ static const char *classend (MatchState *ms, const char *p) {
   switch (*p++) {
     case L_ESC: {
       if (*p == '\0')
-        luaL_error(ms->L, "malformed pattern (ends with " LUA_QL("%%") ")");
+        inluaL_error(ms->L, "malformed pattern (ends with " INLUA_QL("%%") ")");
       return p+1;
     }
     case '[': {
       if (*p == '^') p++;
       do {  /* look for a `]' */
         if (*p == '\0')
-          luaL_error(ms->L, "malformed pattern (missing " LUA_QL("]") ")");
+          inluaL_error(ms->L, "malformed pattern (missing " INLUA_QL("]") ")");
         if (*(p++) == L_ESC && *p != '\0')
           p++;  /* skip escapes (e.g. `%]') */
       } while (*p != ']');
@@ -293,7 +293,7 @@ static const char *match (MatchState *ms, const char *s, const char *p);
 static const char *matchbalance (MatchState *ms, const char *s,
                                    const char *p) {
   if (*p == 0 || *(p+1) == 0)
-    luaL_error(ms->L, "unbalanced pattern");
+    inluaL_error(ms->L, "unbalanced pattern");
   if (*s != *p) return NULL;
   else {
     int b = *p;
@@ -342,7 +342,7 @@ static const char *start_capture (MatchState *ms, const char *s,
                                     const char *p, int what) {
   const char *res;
   int level = ms->level;
-  if (level >= LUA_MAXCAPTURES) luaL_error(ms->L, "too many captures");
+  if (level >= INLUA_MAXCAPTURES) inluaL_error(ms->L, "too many captures");
   ms->capture[level].init = s;
   ms->capture[level].len = what;
   ms->level = level+1;
@@ -397,8 +397,8 @@ static const char *match (MatchState *ms, const char *s, const char *p) {
           const char *ep; char previous;
           p += 2;
           if (*p != '[')
-            luaL_error(ms->L, "missing " LUA_QL("[") " after "
-                               LUA_QL("%%f") " in pattern");
+            inluaL_error(ms->L, "missing " INLUA_QL("[") " after "
+                               INLUA_QL("%%f") " in pattern");
           ep = classend(ms, p);  /* points to what is next */
           previous = (s == ms->src_init) ? '\0' : *(s-1);
           if (matchbracketclass(uchar(previous), p, ep-1) ||
@@ -479,17 +479,17 @@ static void push_onecapture (MatchState *ms, int i, const char *s,
                                                     const char *e) {
   if (i >= ms->level) {
     if (i == 0)  /* ms->level == 0, too */
-      lua_pushlstring(ms->L, s, e - s);  /* add whole match */
+      inlua_pushlstring(ms->L, s, e - s);  /* add whole match */
     else
-      luaL_error(ms->L, "invalid capture index");
+      inluaL_error(ms->L, "invalid capture index");
   }
   else {
     ptrdiff_t l = ms->capture[i].len;
-    if (l == CAP_UNFINISHED) luaL_error(ms->L, "unfinished capture");
+    if (l == CAP_UNFINISHED) inluaL_error(ms->L, "unfinished capture");
     if (l == CAP_POSITION)
-      lua_pushinteger(ms->L, ms->capture[i].init - ms->src_init + 1);
+      inlua_pushinteger(ms->L, ms->capture[i].init - ms->src_init + 1);
     else
-      lua_pushlstring(ms->L, ms->capture[i].init, l);
+      inlua_pushlstring(ms->L, ms->capture[i].init, l);
   }
 }
 
@@ -497,27 +497,27 @@ static void push_onecapture (MatchState *ms, int i, const char *s,
 static int push_captures (MatchState *ms, const char *s, const char *e) {
   int i;
   int nlevels = (ms->level == 0 && s) ? 1 : ms->level;
-  luaL_checkstack(ms->L, nlevels, "too many captures");
+  inluaL_checkstack(ms->L, nlevels, "too many captures");
   for (i = 0; i < nlevels; i++)
     push_onecapture(ms, i, s, e);
   return nlevels;  /* number of strings pushed */
 }
 
 
-static int str_find_aux (lua_State *L, int find) {
+static int str_find_aux (inlua_State *L, int find) {
   size_t l1, l2;
-  const char *s = luaL_checklstring(L, 1, &l1);
-  const char *p = luaL_checklstring(L, 2, &l2);
-  ptrdiff_t init = posrelat(luaL_optinteger(L, 3, 1), l1) - 1;
+  const char *s = inluaL_checklstring(L, 1, &l1);
+  const char *p = inluaL_checklstring(L, 2, &l2);
+  ptrdiff_t init = posrelat(inluaL_optinteger(L, 3, 1), l1) - 1;
   if (init < 0) init = 0;
   else if ((size_t)(init) > l1) init = (ptrdiff_t)l1;
-  if (find && (lua_toboolean(L, 4) ||  /* explicit request? */
+  if (find && (inlua_toboolean(L, 4) ||  /* explicit request? */
       strpbrk(p, SPECIALS) == NULL)) {  /* or no special characters? */
     /* do a plain search */
     const char *s2 = lmemfind(s+init, l1-init, p, l2);
     if (s2) {
-      lua_pushinteger(L, s2-s+1);
-      lua_pushinteger(L, s2-s+l2);
+      inlua_pushinteger(L, s2-s+1);
+      inlua_pushinteger(L, s2-s+l2);
       return 2;
     }
   }
@@ -533,8 +533,8 @@ static int str_find_aux (lua_State *L, int find) {
       ms.level = 0;
       if ((res=match(&ms, s1, p)) != NULL) {
         if (find) {
-          lua_pushinteger(L, s1-s+1);  /* start */
-          lua_pushinteger(L, res-s);   /* end */
+          inlua_pushinteger(L, s1-s+1);  /* start */
+          inlua_pushinteger(L, res-s);   /* end */
           return push_captures(&ms, NULL, 0) + 2;
         }
         else
@@ -542,40 +542,40 @@ static int str_find_aux (lua_State *L, int find) {
       }
     } while (s1++ < ms.src_end && !anchor);
   }
-  lua_pushnil(L);  /* not found */
+  inlua_pushnil(L);  /* not found */
   return 1;
 }
 
 
-static int str_find (lua_State *L) {
+static int str_find (inlua_State *L) {
   return str_find_aux(L, 1);
 }
 
 
-static int str_match (lua_State *L) {
+static int str_match (inlua_State *L) {
   return str_find_aux(L, 0);
 }
 
 
-static int gmatch_aux (lua_State *L) {
+static int gmatch_aux (inlua_State *L) {
   MatchState ms;
   size_t ls;
-  const char *s = lua_tolstring(L, lua_upvalueindex(1), &ls);
-  const char *p = lua_tostring(L, lua_upvalueindex(2));
+  const char *s = inlua_tolstring(L, inlua_upvalueindex(1), &ls);
+  const char *p = inlua_tostring(L, inlua_upvalueindex(2));
   const char *src;
   ms.L = L;
   ms.src_init = s;
   ms.src_end = s+ls;
-  for (src = s + (size_t)lua_tointeger(L, lua_upvalueindex(3));
+  for (src = s + (size_t)inlua_tointeger(L, inlua_upvalueindex(3));
        src <= ms.src_end;
        src++) {
     const char *e;
     ms.level = 0;
     if ((e = match(&ms, src, p)) != NULL) {
-      lua_Integer newstart = e-s;
+      inlua_Integer newstart = e-s;
       if (e == src) newstart++;  /* empty match? go at least one position */
-      lua_pushinteger(L, newstart);
-      lua_replace(L, lua_upvalueindex(3));
+      inlua_pushinteger(L, newstart);
+      inlua_replace(L, inlua_upvalueindex(3));
       return push_captures(&ms, src, e);
     }
   }
@@ -583,90 +583,90 @@ static int gmatch_aux (lua_State *L) {
 }
 
 
-static int gmatch (lua_State *L) {
-  luaL_checkstring(L, 1);
-  luaL_checkstring(L, 2);
-  lua_settop(L, 2);
-  lua_pushinteger(L, 0);
-  lua_pushcclosure(L, gmatch_aux, 3);
+static int gmatch (inlua_State *L) {
+  inluaL_checkstring(L, 1);
+  inluaL_checkstring(L, 2);
+  inlua_settop(L, 2);
+  inlua_pushinteger(L, 0);
+  inlua_pushcclosure(L, gmatch_aux, 3);
   return 1;
 }
 
 
-static int gfind_nodef (lua_State *L) {
-  return luaL_error(L, LUA_QL("string.gfind") " was renamed to "
-                       LUA_QL("string.gmatch"));
+static int gfind_nodef (inlua_State *L) {
+  return inluaL_error(L, INLUA_QL("string.gfind") " was renamed to "
+                       INLUA_QL("string.gmatch"));
 }
 
 
-static void add_s (MatchState *ms, luaL_Buffer *b, const char *s,
+static void add_s (MatchState *ms, inluaL_Buffer *b, const char *s,
                                                    const char *e) {
   size_t l, i;
-  const char *news = lua_tolstring(ms->L, 3, &l);
+  const char *news = inlua_tolstring(ms->L, 3, &l);
   for (i = 0; i < l; i++) {
     if (news[i] != L_ESC)
-      luaL_addchar(b, news[i]);
+      inluaL_addchar(b, news[i]);
     else {
       i++;  /* skip ESC */
       if (!isdigit(uchar(news[i])))
-        luaL_addchar(b, news[i]);
+        inluaL_addchar(b, news[i]);
       else if (news[i] == '0')
-          luaL_addlstring(b, s, e - s);
+          inluaL_addlstring(b, s, e - s);
       else {
         push_onecapture(ms, news[i] - '1', s, e);
-        luaL_addvalue(b);  /* add capture to accumulated result */
+        inluaL_addvalue(b);  /* add capture to accumulated result */
       }
     }
   }
 }
 
 
-static void add_value (MatchState *ms, luaL_Buffer *b, const char *s,
+static void add_value (MatchState *ms, inluaL_Buffer *b, const char *s,
                                                        const char *e) {
-  lua_State *L = ms->L;
-  switch (lua_type(L, 3)) {
-    case LUA_TNUMBER:
-    case LUA_TSTRING: {
+  inlua_State *L = ms->L;
+  switch (inlua_type(L, 3)) {
+    case INLUA_TNUMBER:
+    case INLUA_TSTRING: {
       add_s(ms, b, s, e);
       return;
     }
-    case LUA_TFUNCTION: {
+    case INLUA_TFUNCTION: {
       int n;
-      lua_pushvalue(L, 3);
+      inlua_pushvalue(L, 3);
       n = push_captures(ms, s, e);
-      lua_call(L, n, 1);
+      inlua_call(L, n, 1);
       break;
     }
-    case LUA_TTABLE: {
+    case INLUA_TTABLE: {
       push_onecapture(ms, 0, s, e);
-      lua_gettable(L, 3);
+      inlua_gettable(L, 3);
       break;
     }
   }
-  if (!lua_toboolean(L, -1)) {  /* nil or false? */
-    lua_pop(L, 1);
-    lua_pushlstring(L, s, e - s);  /* keep original text */
+  if (!inlua_toboolean(L, -1)) {  /* nil or false? */
+    inlua_pop(L, 1);
+    inlua_pushlstring(L, s, e - s);  /* keep original text */
   }
-  else if (!lua_isstring(L, -1))
-    luaL_error(L, "invalid replacement value (a %s)", luaL_typename(L, -1)); 
-  luaL_addvalue(b);  /* add result to accumulator */
+  else if (!inlua_isstring(L, -1))
+    inluaL_error(L, "invalid replacement value (a %s)", inluaL_typename(L, -1)); 
+  inluaL_addvalue(b);  /* add result to accumulator */
 }
 
 
-static int str_gsub (lua_State *L) {
+static int str_gsub (inlua_State *L) {
   size_t srcl;
-  const char *src = luaL_checklstring(L, 1, &srcl);
-  const char *p = luaL_checkstring(L, 2);
-  int  tr = lua_type(L, 3);
-  int max_s = luaL_optint(L, 4, srcl+1);
+  const char *src = inluaL_checklstring(L, 1, &srcl);
+  const char *p = inluaL_checkstring(L, 2);
+  int  tr = inlua_type(L, 3);
+  int max_s = inluaL_optint(L, 4, srcl+1);
   int anchor = (*p == '^') ? (p++, 1) : 0;
   int n = 0;
   MatchState ms;
-  luaL_Buffer b;
-  luaL_argcheck(L, tr == LUA_TNUMBER || tr == LUA_TSTRING ||
-                   tr == LUA_TFUNCTION || tr == LUA_TTABLE, 3,
+  inluaL_Buffer b;
+  inluaL_argcheck(L, tr == INLUA_TNUMBER || tr == INLUA_TSTRING ||
+                   tr == INLUA_TFUNCTION || tr == INLUA_TTABLE, 3,
                       "string/function/table expected");
-  luaL_buffinit(L, &b);
+  inluaL_buffinit(L, &b);
   ms.L = L;
   ms.src_init = src;
   ms.src_end = src+srcl;
@@ -681,13 +681,13 @@ static int str_gsub (lua_State *L) {
     if (e && e>src) /* non empty match? */
       src = e;  /* skip it */
     else if (src < ms.src_end)
-      luaL_addchar(&b, *src++);
+      inluaL_addchar(&b, *src++);
     else break;
     if (anchor) break;
   }
-  luaL_addlstring(&b, src, ms.src_end-src);
-  luaL_pushresult(&b);
-  lua_pushinteger(L, n);  /* number of substitutions */
+  inluaL_addlstring(&b, src, ms.src_end-src);
+  inluaL_pushresult(&b);
+  inlua_pushinteger(L, n);  /* number of substitutions */
   return 2;
 }
 
@@ -702,43 +702,43 @@ static int str_gsub (lua_State *L) {
 ** maximum size of each format specification (such as '%-099.99d')
 ** (+10 accounts for %99.99x plus margin of error)
 */
-#define MAX_FORMAT	(sizeof(FLAGS) + sizeof(LUA_INTFRMLEN) + 10)
+#define MAX_FORMAT	(sizeof(FLAGS) + sizeof(INLUA_INTFRMLEN) + 10)
 
 
-static void addquoted (lua_State *L, luaL_Buffer *b, int arg) {
+static void addquoted (inlua_State *L, inluaL_Buffer *b, int arg) {
   size_t l;
-  const char *s = luaL_checklstring(L, arg, &l);
-  luaL_addchar(b, '"');
+  const char *s = inluaL_checklstring(L, arg, &l);
+  inluaL_addchar(b, '"');
   while (l--) {
     switch (*s) {
       case '"': case '\\': case '\n': {
-        luaL_addchar(b, '\\');
-        luaL_addchar(b, *s);
+        inluaL_addchar(b, '\\');
+        inluaL_addchar(b, *s);
         break;
       }
       case '\r': {
-        luaL_addlstring(b, "\\r", 2);
+        inluaL_addlstring(b, "\\r", 2);
         break;
       }
       case '\0': {
-        luaL_addlstring(b, "\\000", 4);
+        inluaL_addlstring(b, "\\000", 4);
         break;
       }
       default: {
-        luaL_addchar(b, *s);
+        inluaL_addchar(b, *s);
         break;
       }
     }
     s++;
   }
-  luaL_addchar(b, '"');
+  inluaL_addchar(b, '"');
 }
 
-static const char *scanformat (lua_State *L, const char *strfrmt, char *form) {
+static const char *scanformat (inlua_State *L, const char *strfrmt, char *form) {
   const char *p = strfrmt;
   while (*p != '\0' && strchr(FLAGS, *p) != NULL) p++;  /* skip flags */
   if ((size_t)(p - strfrmt) >= sizeof(FLAGS))
-    luaL_error(L, "invalid format (repeated flags)");
+    inluaL_error(L, "invalid format (repeated flags)");
   if (isdigit(uchar(*p))) p++;  /* skip width */
   if (isdigit(uchar(*p))) p++;  /* (2 digits at most) */
   if (*p == '.') {
@@ -747,7 +747,7 @@ static const char *scanformat (lua_State *L, const char *strfrmt, char *form) {
     if (isdigit(uchar(*p))) p++;  /* (2 digits at most) */
   }
   if (isdigit(uchar(*p)))
-    luaL_error(L, "invalid format (width or precision too long)");
+    inluaL_error(L, "invalid format (width or precision too long)");
   *(form++) = '%';
   strncpy(form, strfrmt, p - strfrmt + 1);
   form += p - strfrmt + 1;
@@ -759,49 +759,49 @@ static const char *scanformat (lua_State *L, const char *strfrmt, char *form) {
 static void addintlen (char *form) {
   size_t l = strlen(form);
   char spec = form[l - 1];
-  strcpy(form + l - 1, LUA_INTFRMLEN);
-  form[l + sizeof(LUA_INTFRMLEN) - 2] = spec;
-  form[l + sizeof(LUA_INTFRMLEN) - 1] = '\0';
+  strcpy(form + l - 1, INLUA_INTFRMLEN);
+  form[l + sizeof(INLUA_INTFRMLEN) - 2] = spec;
+  form[l + sizeof(INLUA_INTFRMLEN) - 1] = '\0';
 }
 
 
-static int str_format (lua_State *L) {
-  int top = lua_gettop(L);
+static int str_format (inlua_State *L) {
+  int top = inlua_gettop(L);
   int arg = 1;
   size_t sfl;
-  const char *strfrmt = luaL_checklstring(L, arg, &sfl);
+  const char *strfrmt = inluaL_checklstring(L, arg, &sfl);
   const char *strfrmt_end = strfrmt+sfl;
-  luaL_Buffer b;
-  luaL_buffinit(L, &b);
+  inluaL_Buffer b;
+  inluaL_buffinit(L, &b);
   while (strfrmt < strfrmt_end) {
     if (*strfrmt != L_ESC)
-      luaL_addchar(&b, *strfrmt++);
+      inluaL_addchar(&b, *strfrmt++);
     else if (*++strfrmt == L_ESC)
-      luaL_addchar(&b, *strfrmt++);  /* %% */
+      inluaL_addchar(&b, *strfrmt++);  /* %% */
     else { /* format item */
       char form[MAX_FORMAT];  /* to store the format (`%...') */
       char buff[MAX_ITEM];  /* to store the formatted item */
       if (++arg > top)
-        luaL_argerror(L, arg, "no value");
+        inluaL_argerror(L, arg, "no value");
       strfrmt = scanformat(L, strfrmt, form);
       switch (*strfrmt++) {
         case 'c': {
-          sprintf(buff, form, (int)luaL_checknumber(L, arg));
+          sprintf(buff, form, (int)inluaL_checknumber(L, arg));
           break;
         }
         case 'd':  case 'i': {
           addintlen(form);
-          sprintf(buff, form, (LUA_INTFRM_T)luaL_checknumber(L, arg));
+          sprintf(buff, form, (INLUA_INTFRM_T)inluaL_checknumber(L, arg));
           break;
         }
         case 'o':  case 'u':  case 'x':  case 'X': {
           addintlen(form);
-          sprintf(buff, form, (unsigned LUA_INTFRM_T)luaL_checknumber(L, arg));
+          sprintf(buff, form, (unsigned INLUA_INTFRM_T)inluaL_checknumber(L, arg));
           break;
         }
         case 'e':  case 'E': case 'f':
         case 'g': case 'G': {
-          sprintf(buff, form, (double)luaL_checknumber(L, arg));
+          sprintf(buff, form, (double)inluaL_checknumber(L, arg));
           break;
         }
         case 'q': {
@@ -810,12 +810,12 @@ static int str_format (lua_State *L) {
         }
         case 's': {
           size_t l;
-          const char *s = luaL_checklstring(L, arg, &l);
+          const char *s = inluaL_checklstring(L, arg, &l);
           if (!strchr(form, '.') && l >= 100) {
             /* no precision and string is too long to be formatted;
                keep original string */
-            lua_pushvalue(L, arg);
-            luaL_addvalue(&b);
+            inlua_pushvalue(L, arg);
+            inluaL_addvalue(&b);
             continue;  /* skip the `addsize' at the end */
           }
           else {
@@ -824,25 +824,25 @@ static int str_format (lua_State *L) {
           }
         }
         default: {  /* also treat cases `pnLlh' */
-          return luaL_error(L, "invalid option " LUA_QL("%%%c") " to "
-                               LUA_QL("format"), *(strfrmt - 1));
+          return inluaL_error(L, "invalid option " INLUA_QL("%%%c") " to "
+                               INLUA_QL("format"), *(strfrmt - 1));
         }
       }
-      luaL_addlstring(&b, buff, strlen(buff));
+      inluaL_addlstring(&b, buff, strlen(buff));
     }
   }
-  luaL_pushresult(&b);
+  inluaL_pushresult(&b);
   return 1;
 }
 
 
-static int str_meta_index (lua_State *L) {
-  lua_getmetatable(L, 1); // get string library (a string's metatable)
-  lua_pushvalue(L, 2); // push key
-  lua_rawget(L, -2); // rawget(string library table, key)
-  if (lua_isnil(L, -1)) {
-    lua_pop(L, 2); // pop nil and string library table, resetting the stack
-    if (lua_isnumber(L, 2))
+static int str_meta_index (inlua_State *L) {
+  inlua_getmetatable(L, 1); // get string library (a string's metatable)
+  inlua_pushvalue(L, 2); // push key
+  inlua_rawget(L, -2); // rawget(string library table, key)
+  if (inlua_isnil(L, -1)) {
+    inlua_pop(L, 2); // pop nil and string library table, resetting the stack
+    if (inlua_isnumber(L, 2))
       return str_index(L);
     else return 0;
   }
@@ -850,7 +850,7 @@ static int str_meta_index (lua_State *L) {
 }
 
 
-static const luaL_Reg strlib[] = {
+static const inluaL_Reg strlib[] = {
   {"byte", str_byte},
   {"char", str_char},
   {"dump", str_dump},
@@ -871,29 +871,29 @@ static const luaL_Reg strlib[] = {
 };
 
 
-static void registermetatable (lua_State *L) {
-  // lua_createtable(L, 0, 1);  /* create metatable for strings */
+static void registermetatable (inlua_State *L) {
+  // inlua_createtable(L, 0, 1);  /* create metatable for strings */
   // metatable for strings is now the string library
-  lua_pushliteral(L, "");  /* dummy string */
-  lua_pushvalue(L, -2); /* copy of the string library table */
-  lua_setmetatable(L, -2);  /* set string metatable */
-  lua_pop(L, 1);  /* pop dummy string */
-  // lua_pushvalue(L, -2);  /* string library... */
-  // lua_setfield(L, -2, "__lib");  /* ...is stored in metatable for reference */
-  lua_pushcfunction(L, str_meta_index);
-  lua_setfield(L, -2, "__index"); /* set __index metamethod of string library */
-  // lua_pop(L, 1);  /* pop metatable */
+  inlua_pushliteral(L, "");  /* dummy string */
+  inlua_pushvalue(L, -2); /* copy of the string library table */
+  inlua_setmetatable(L, -2);  /* set string metatable */
+  inlua_pop(L, 1);  /* pop dummy string */
+  // inlua_pushvalue(L, -2);  /* string library... */
+  // inlua_setfield(L, -2, "__lib");  /* ...is stored in metatable for reference */
+  inlua_pushcfunction(L, str_meta_index);
+  inlua_setfield(L, -2, "__index"); /* set __index metamethod of string library */
+  // inlua_pop(L, 1);  /* pop metatable */
 }
 
 
 /*
 ** Open string library
 */
-LUALIB_API int luaopen_string (lua_State *L) {
-  luaL_register(L, LUA_STRLIBNAME, strlib);
-#if defined(LUA_COMPAT_GFIND)
-  lua_getfield(L, -1, "gmatch");
-  lua_setfield(L, -2, "gfind");
+INLUALIB_API int inluaopen_string (inlua_State *L) {
+  inluaL_register(L, INLUA_STRLIBNAME, strlib);
+#if defined(INLUA_COMPAT_GFIND)
+  inlua_getfield(L, -1, "gmatch");
+  inlua_setfield(L, -2, "gfind");
 #endif
   registermetatable(L);
   return 1;

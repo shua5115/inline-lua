@@ -2,7 +2,7 @@
 * all.c -- Lua core, libraries and interpreter in a single file
 */
 
-#define luaall_c
+#define inluaall_c
 
 #include "lapi.c"
 #include "lcode.c"

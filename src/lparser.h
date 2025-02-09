@@ -39,7 +39,7 @@ typedef struct expdesc {
   expkind k;
   union {
     struct { int info, aux; } s;
-    lua_Number nval;
+    inlua_Number nval;
   } u;
   int t;  /* patch list of `exit when true' */
   int f;  /* patch list of `exit when false' */
@@ -61,7 +61,7 @@ typedef struct FuncState {
   Table *h;  /* table to find (and reuse) elements in `k' */
   struct FuncState *prev;  /* enclosing function */
   struct LexState *ls;  /* lexical state */
-  struct lua_State *L;  /* copy of the Lua state */
+  struct inlua_State *L;  /* copy of the Lua state */
   struct BlockCnt *bl;  /* chain of current blocks */
   int pc;  /* next position to code (equivalent to `ncode') */
   int lasttarget;   /* `pc' of last `jump target' */
@@ -71,12 +71,12 @@ typedef struct FuncState {
   int np;  /* number of elements in `p' */
   short nlocvars;  /* number of elements in `locvars' */
   lu_byte nactvar;  /* number of active local variables */
-  upvaldesc upvalues[LUAI_MAXUPVALUES];  /* upvalues */
-  unsigned short actvar[LUAI_MAXVARS];  /* declared-variable stack */
+  upvaldesc upvalues[INLUAI_MAXUPVALUES];  /* upvalues */
+  unsigned short actvar[INLUAI_MAXVARS];  /* declared-variable stack */
 } FuncState;
 
 
-LUAI_FUNC Proto *luaY_parser (lua_State *L, ZIO *z, Mbuffer *buff,
+INLUAI_FUNC Proto *luaY_parser (inlua_State *L, ZIO *z, Mbuffer *buff,
                                             const char *name);
 
 

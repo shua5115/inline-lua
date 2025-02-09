@@ -8,7 +8,7 @@
 #include <stddef.h>
 
 #define lmem_c
-#define LUA_CORE
+#define INLUA_CORE
 
 #include "inlua.h"
 
@@ -43,7 +43,7 @@
 #define MINSIZEARRAY	4
 
 
-void *luaM_growaux_ (lua_State *L, void *block, int *size, size_t size_elems,
+void *luaM_growaux_ (inlua_State *L, void *block, int *size, size_t size_elems,
                      int limit, const char *errormsg) {
   void *newblock;
   int newsize;
@@ -63,7 +63,7 @@ void *luaM_growaux_ (lua_State *L, void *block, int *size, size_t size_elems,
 }
 
 
-void *luaM_toobig (lua_State *L) {
+void *luaM_toobig (inlua_State *L) {
   luaG_runerror(L, "memory allocation error: block too big");
   return NULL;  /* to avoid warnings */
 }
@@ -73,13 +73,13 @@ void *luaM_toobig (lua_State *L) {
 /*
 ** generic allocation routine.
 */
-void *luaM_realloc_ (lua_State *L, void *block, size_t osize, size_t nsize) {
+void *luaM_realloc_ (inlua_State *L, void *block, size_t osize, size_t nsize) {
   global_State *g = G(L);
-  lua_assert((osize == 0) == (block == NULL));
+  inlua_assert((osize == 0) == (block == NULL));
   block = (*g->frealloc)(g->ud, block, osize, nsize);
   if (block == NULL && nsize > 0)
-    luaD_throw(L, LUA_ERRMEM);
-  lua_assert((nsize == 0) == (block == NULL));
+    luaD_throw(L, INLUA_ERRMEM);
+  inlua_assert((nsize == 0) == (block == NULL));
   g->totalbytes = (g->totalbytes - osize) + nsize;
   return block;
 }

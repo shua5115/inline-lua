@@ -6,7 +6,7 @@
 
 
 #define linit_c
-#define LUA_LIB
+#define INLUA_LIB
 
 #include "inlua.h"
 
@@ -14,25 +14,25 @@
 #include "inlauxlib.h"
 
 
-static const luaL_Reg lualibs[] = {
-  {"", luaopen_base},
-  {LUA_LOADLIBNAME, luaopen_package},
-  {LUA_TABLIBNAME, luaopen_table},
-  {LUA_IOLIBNAME, luaopen_io},
-  {LUA_OSLIBNAME, luaopen_os},
-  {LUA_STRLIBNAME, luaopen_string},
-  {LUA_MATHLIBNAME, luaopen_math},
-  {LUA_DBLIBNAME, luaopen_debug},
+static const inluaL_Reg lualibs[] = {
+  {"", inluaopen_base},
+  {INLUA_LOADLIBNAME, inluaopen_package},
+  {INLUA_TABLIBNAME, inluaopen_table},
+  {INLUA_IOLIBNAME, inluaopen_io},
+  {INLUA_OSLIBNAME, inluaopen_os},
+  {INLUA_STRLIBNAME, inluaopen_string},
+  {INLUA_MATHLIBNAME, inluaopen_math},
+  {INLUA_DBLIBNAME, inluaopen_debug},
   {NULL, NULL}
 };
 
 
-LUALIB_API void luaL_openlibs (lua_State *L) {
-  const luaL_Reg *lib = lualibs;
+INLUALIB_API void inluaL_openlibs (inlua_State *L) {
+  const inluaL_Reg *lib = lualibs;
   for (; lib->func; lib++) {
-    lua_pushcfunction(L, lib->func);
-    lua_pushstring(L, lib->name);
-    lua_call(L, 1, 0);
+    inlua_pushcfunction(L, lib->func);
+    inlua_pushstring(L, lib->name);
+    inlua_call(L, 1, 0);
   }
 }
 

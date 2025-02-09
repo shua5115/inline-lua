@@ -12,29 +12,29 @@
 * #define NODUMP
 */
 
-#define LUA_CORE
+#define INLUA_CORE
 
 #include "llex.h"
 #include "lparser.h"
 #include "lzio.h"
 
-LUAI_FUNC void luaX_init (lua_State *L) {
+INLUAI_FUNC void luaX_init (inlua_State *L) {
   UNUSED(L);
 }
 
-LUAI_FUNC Proto *luaY_parser (lua_State *L, ZIO *z, Mbuffer *buff, const char *name) {
+INLUAI_FUNC Proto *luaY_parser (inlua_State *L, ZIO *z, Mbuffer *buff, const char *name) {
   UNUSED(z);
   UNUSED(buff);
   UNUSED(name);
-  lua_pushliteral(L,"parser not loaded");
-  lua_error(L);
+  inlua_pushliteral(L,"parser not loaded");
+  inlua_error(L);
   return NULL;
 }
 
 #ifdef NODUMP
 #include "lundump.h"
 
-LUAI_FUNC int luaU_dump (lua_State* L, const Proto* f, lua_Writer w, void* data, int strip) {
+INLUAI_FUNC int luaU_dump (inlua_State* L, const Proto* f, inlua_Writer w, void* data, int strip) {
   UNUSED(f);
   UNUSED(w);
   UNUSED(data);
@@ -43,8 +43,8 @@ LUAI_FUNC int luaU_dump (lua_State* L, const Proto* f, lua_Writer w, void* data,
   UNUSED(L);
   return 0;
 #else
-  lua_pushliteral(L,"dumper not loaded");
-  lua_error(L);
+  inlua_pushliteral(L,"dumper not loaded");
+  inlua_error(L);
 #endif
 }
 #endif

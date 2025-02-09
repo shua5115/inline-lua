@@ -7,7 +7,7 @@
 #include <stddef.h>
 
 #define ldump_c
-#define LUA_CORE
+#define INLUA_CORE
 
 #include "inlua.h"
 
@@ -16,8 +16,8 @@
 #include "lundump.h"
 
 typedef struct {
- lua_State* L;
- lua_Writer writer;
+ inlua_State* L;
+ inlua_Writer writer;
  void* data;
  int strip;
  int status;
@@ -47,7 +47,7 @@ static void DumpInt(int x, DumpState* D)
  DumpVar(x,D);
 }
 
-static void DumpNumber(lua_Number x, DumpState* D)
+static void DumpNumber(inlua_Number x, DumpState* D)
 {
  DumpVar(x,D);
 }
@@ -87,19 +87,19 @@ static void DumpConstants(const Proto* f, DumpState* D)
   DumpChar(ttype(o),D);
   switch (ttype(o))
   {
-   case LUA_TNIL:
+   case INLUA_TNIL:
 	break;
-   case LUA_TBOOLEAN:
+   case INLUA_TBOOLEAN:
 	DumpChar(bvalue(o),D);
 	break;
-   case LUA_TNUMBER:
+   case INLUA_TNUMBER:
 	DumpNumber(nvalue(o),D);
 	break;
-   case LUA_TSTRING:
+   case INLUA_TSTRING:
 	DumpString(rawtsvalue(o),D);
 	break;
    default:
-	lua_assert(0);			/* cannot happen */
+	inlua_assert(0);			/* cannot happen */
 	break;
   }
  }
@@ -150,7 +150,7 @@ static void DumpHeader(DumpState* D)
 /*
 ** dump Lua function as precompiled chunk
 */
-int luaU_dump (lua_State* L, const Proto* f, lua_Writer w, void* data, int strip)
+int luaU_dump (inlua_State* L, const Proto* f, inlua_Writer w, void* data, int strip)
 {
  DumpState D;
  D.L=L;

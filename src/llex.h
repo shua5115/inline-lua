@@ -55,11 +55,11 @@ enum RESERVED {
 
 
 /* array with token `names' */
-LUAI_DATA const char *const luaX_tokens [];
+INLUAI_DATA const char *const luaX_tokens [];
 
 
 typedef union {
-  lua_Number r;
+  inlua_Number r;
   TString *ts;
 } SemInfo;  /* semantics information */
 
@@ -77,7 +77,7 @@ typedef struct LexState {
   Token t;  /* current token */
   Token lookahead;  /* look ahead token */
   struct FuncState *fs;  /* `FuncState' is private to the parser */
-  struct lua_State *L;
+  struct inlua_State *L;
   ZIO *z;  /* input stream */
   Mbuffer *buff;  /* buffer for tokens */
   TString *source;  /* current source name */
@@ -85,15 +85,15 @@ typedef struct LexState {
 } LexState;
 
 
-LUAI_FUNC void luaX_init (lua_State *L);
-LUAI_FUNC void luaX_setinput (lua_State *L, LexState *ls, ZIO *z,
+INLUAI_FUNC void luaX_init (inlua_State *L);
+INLUAI_FUNC void luaX_setinput (inlua_State *L, LexState *ls, ZIO *z,
                               TString *source);
-LUAI_FUNC TString *luaX_newstring (LexState *ls, const char *str, size_t l);
-LUAI_FUNC void luaX_next (LexState *ls);
-LUAI_FUNC void luaX_lookahead (LexState *ls);
-LUAI_FUNC void luaX_lexerror (LexState *ls, const char *msg, int token);
-LUAI_FUNC void luaX_syntaxerror (LexState *ls, const char *s);
-LUAI_FUNC const char *luaX_token2str (LexState *ls, int token);
+INLUAI_FUNC TString *luaX_newstring (LexState *ls, const char *str, size_t l);
+INLUAI_FUNC void luaX_next (LexState *ls);
+INLUAI_FUNC void luaX_lookahead (LexState *ls);
+INLUAI_FUNC void luaX_lexerror (LexState *ls, const char *msg, int token);
+INLUAI_FUNC void luaX_syntaxerror (LexState *ls, const char *s);
+INLUAI_FUNC const char *luaX_token2str (LexState *ls, int token);
 
 
 #endif

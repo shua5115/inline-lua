@@ -7,7 +7,7 @@
 #include <string.h>
 
 #define lundump_c
-#define LUA_CORE
+#define INLUA_CORE
 
 #include "inlua.h"
 
@@ -21,7 +21,7 @@
 #include "lzio.h"
 
 typedef struct {
- lua_State* L;
+ inlua_State* L;
  ZIO* Z;
  Mbuffer* b;
  const char* name;
@@ -36,7 +36,7 @@ typedef struct {
 static void error(LoadState* S, const char* why)
 {
  luaO_pushfstring(S->L,"%s: %s in precompiled chunk",S->name,why);
- luaD_throw(S->L,LUA_ERRSYNTAX);
+ luaD_throw(S->L,INLUA_ERRSYNTAX);
 }
 #endif
 
@@ -66,9 +66,9 @@ static int LoadInt(LoadState* S)
  return x;
 }
 
-static lua_Number LoadNumber(LoadState* S)
+static inlua_Number LoadNumber(LoadState* S)
 {
- lua_Number x;
+ inlua_Number x;
  LoadVar(S,x);
  return x;
 }
@@ -110,16 +110,16 @@ static void LoadConstants(LoadState* S, Proto* f)
   int t=LoadChar(S);
   switch (t)
   {
-   case LUA_TNIL:
+   case INLUA_TNIL:
    	setnilvalue(o);
 	break;
-   case LUA_TBOOLEAN:
+   case INLUA_TBOOLEAN:
    	setbvalue(o,LoadChar(S)!=0);
 	break;
-   case LUA_TNUMBER:
+   case INLUA_TNUMBER:
 	setnvalue(o,LoadNumber(S));
 	break;
-   case LUA_TSTRING:
+   case INLUA_TSTRING:
 	setsvalue2n(S->L,o,LoadString(S));
 	break;
    default:
@@ -161,7 +161,7 @@ static void LoadDebug(LoadState* S, Proto* f)
 static Proto* LoadFunction(LoadState* S, TString* p)
 {
  Proto* f;
- if (++S->L->nCcalls > LUAI_MAXCCALLS) error(S,"code too deep");
+ if (++S->L->nCcalls > INLUAI_MAXCCALLS) error(S,"code too deep");
  f=luaF_newproto(S->L);
  setptvalue2s(S->L,S->L->top,f); incr_top(S->L);
  f->source=LoadString(S); if (f->source==NULL) f->source=p;
@@ -192,12 +192,12 @@ static void LoadHeader(LoadState* S)
 /*
 ** load precompiled chunk
 */
-Proto* luaU_undump (lua_State* L, ZIO* Z, Mbuffer* buff, const char* name)
+Proto* luaU_undump (inlua_State* L, ZIO* Z, Mbuffer* buff, const char* name)
 {
  LoadState S;
  if (*name=='@' || *name=='=')
   S.name=name+1;
- else if (*name==LUA_SIGNATURE[0])
+ else if (*name==INLUA_SIGNATURE[0])
   S.name="binary string";
  else
   S.name=name;
@@ -214,14 +214,14 @@ Proto* luaU_undump (lua_State* L, ZIO* Z, Mbuffer* buff, const char* name)
 void luaU_header (char* h)
 {
  int x=1;
- memcpy(h,LUA_SIGNATURE,sizeof(LUA_SIGNATURE)-1);
- h+=sizeof(LUA_SIGNATURE)-1;
+ memcpy(h,INLUA_SIGNATURE,sizeof(INLUA_SIGNATURE)-1);
+ h+=sizeof(INLUA_SIGNATURE)-1;
  *h++=(char)LUAC_VERSION;
  *h++=(char)LUAC_FORMAT;
  *h++=(char)*(char*)&x;				/* endianness */
  *h++=(char)sizeof(int);
  *h++=(char)sizeof(size_t);
  *h++=(char)sizeof(Instruction);
- *h++=(char)sizeof(lua_Number);
- *h++=(char)(((lua_Number)0.5)==0);		/* is lua_Number integral? */
+ *h++=(char)sizeof(inlua_Number);
+ *h++=(char)(((inlua_Number)0.5)==0);		/* is inlua_Number integral? */
 }

@@ -11,17 +11,17 @@
 #include "lzio.h"
 
 /* load one chunk; from lundump.c */
-LUAI_FUNC Proto* luaU_undump (lua_State* L, ZIO* Z, Mbuffer* buff, const char* name);
+INLUAI_FUNC Proto* luaU_undump (inlua_State* L, ZIO* Z, Mbuffer* buff, const char* name);
 
 /* make header; from lundump.c */
-LUAI_FUNC void luaU_header (char* h);
+INLUAI_FUNC void luaU_header (char* h);
 
 /* dump one chunk; from ldump.c */
-LUAI_FUNC int luaU_dump (lua_State* L, const Proto* f, lua_Writer w, void* data, int strip);
+INLUAI_FUNC int luaU_dump (inlua_State* L, const Proto* f, inlua_Writer w, void* data, int strip);
 
 #ifdef luac_c
 /* print one chunk; from print.c */
-LUAI_FUNC void luaU_print (const Proto* f, int full);
+INLUAI_FUNC void luaU_print (const Proto* f, int full);
 #endif
 
 /* for header of binary files -- this is Lua 5.1 */

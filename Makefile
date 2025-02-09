@@ -16,7 +16,7 @@ INSTALL_LIB= $(INSTALL_TOP)/lib
 INSTALL_MAN= $(INSTALL_TOP)/man/man1
 #
 # You probably want to make INSTALL_LMOD and INSTALL_CMOD consistent with
-# LUA_ROOT, LUA_LDIR, and LUA_CDIR in inluaconf.h (and also with etc/lua.pc).
+# INLUA_ROOT, INLUA_LDIR, and INLUA_CDIR in inluaconf.h (and also with etc/lua.pc).
 INSTALL_LMOD= $(INSTALL_TOP)/share/inlua/$V
 INSTALL_CMOD= $(INSTALL_TOP)/lib/inlua/$V
 
@@ -44,7 +44,7 @@ PLATS= aix ansi bsd freebsd generic linux macosx mingw posix solaris
 TO_BIN= inlua inluac
 TO_INC= inlua.h inluaconf.h inlualib.h inlauxlib.h ../etc/inlua.hpp
 TO_LIB= libinlua.a
-TO_MAN= lua.1 luac.1
+TO_MAN= inlua.1 inluac.1
 
 # Lua version and release.
 V= 5.1

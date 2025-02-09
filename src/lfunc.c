@@ -8,7 +8,7 @@
 #include <stddef.h>
 
 #define lfunc_c
-#define LUA_CORE
+#define INLUA_CORE
 
 #include "inlua.h"
 
@@ -20,9 +20,9 @@
 
 
 
-Closure *luaF_newCclosure (lua_State *L, int nelems, Table *e) {
+Closure *luaF_newCclosure (inlua_State *L, int nelems, Table *e) {
   Closure *c = cast(Closure *, luaM_malloc(L, sizeCclosure(nelems)));
-  luaC_link(L, obj2gco(c), LUA_TFUNCTION);
+  luaC_link(L, obj2gco(c), INLUA_TFUNCTION);
   c->c.isC = 1;
   c->c.env = e;
   c->c.nupvalues = cast_byte(nelems);
@@ -30,9 +30,9 @@ Closure *luaF_newCclosure (lua_State *L, int nelems, Table *e) {
 }
 
 
-Closure *luaF_newLclosure (lua_State *L, int nelems, Table *e) {
+Closure *luaF_newLclosure (inlua_State *L, int nelems, Table *e) {
   Closure *c = cast(Closure *, luaM_malloc(L, sizeLclosure(nelems)));
-  luaC_link(L, obj2gco(c), LUA_TFUNCTION);
+  luaC_link(L, obj2gco(c), INLUA_TFUNCTION);
   c->l.isC = 0;
   c->l.env = e;
   c->l.nupvalues = cast_byte(nelems);
@@ -41,7 +41,7 @@ Closure *luaF_newLclosure (lua_State *L, int nelems, Table *e) {
 }
 
 
-UpVal *luaF_newupval (lua_State *L) {
+UpVal *luaF_newupval (inlua_State *L) {
   UpVal *uv = luaM_new(L, UpVal);
   luaC_link(L, obj2gco(uv), LUA_TUPVAL);
   uv->v = &uv->u.value;
@@ -50,13 +50,13 @@ UpVal *luaF_newupval (lua_State *L) {
 }
 
 
-UpVal *luaF_findupval (lua_State *L, StkId level) {
+UpVal *luaF_findupval (inlua_State *L, StkId level) {
   global_State *g = G(L);
   GCObject **pp = &L->openupval;
   UpVal *p;
   UpVal *uv;
   while (*pp != NULL && (p = ngcotouv(*pp))->v >= level) {
-    lua_assert(p->v != &p->u.value);
+    inlua_assert(p->v != &p->u.value);
     if (p->v == level) {  /* found a corresponding upvalue? */
       if (isdead(g, obj2gco(p)))  /* is it dead? */
         changewhite(obj2gco(p));  /* ressurect it */
@@ -74,31 +74,31 @@ UpVal *luaF_findupval (lua_State *L, StkId level) {
   uv->u.l.next = g->uvhead.u.l.next;
   uv->u.l.next->u.l.prev = uv;
   g->uvhead.u.l.next = uv;
-  lua_assert(uv->u.l.next->u.l.prev == uv && uv->u.l.prev->u.l.next == uv);
+  inlua_assert(uv->u.l.next->u.l.prev == uv && uv->u.l.prev->u.l.next == uv);
   return uv;
 }
 
 
 static void unlinkupval (UpVal *uv) {
-  lua_assert(uv->u.l.next->u.l.prev == uv && uv->u.l.prev->u.l.next == uv);
+  inlua_assert(uv->u.l.next->u.l.prev == uv && uv->u.l.prev->u.l.next == uv);
   uv->u.l.next->u.l.prev = uv->u.l.prev;  /* remove from `uvhead' list */
   uv->u.l.prev->u.l.next = uv->u.l.next;
 }
 
 
-void luaF_freeupval (lua_State *L, UpVal *uv) {
+void luaF_freeupval (inlua_State *L, UpVal *uv) {
   if (uv->v != &uv->u.value)  /* is it open? */
     unlinkupval(uv);  /* remove from open list */
   luaM_free(L, uv);  /* free upvalue */
 }
 
 
-void luaF_close (lua_State *L, StkId level) {
+void luaF_close (inlua_State *L, StkId level) {
   UpVal *uv;
   global_State *g = G(L);
   while (L->openupval != NULL && (uv = ngcotouv(L->openupval))->v >= level) {
     GCObject *o = obj2gco(uv);
-    lua_assert(!isblack(o) && uv->v != &uv->u.value);
+    inlua_assert(!isblack(o) && uv->v != &uv->u.value);
     L->openupval = uv->next;  /* remove from `open' list */
     if (isdead(g, o))
       luaF_freeupval(L, uv);  /* free upvalue */
@@ -112,7 +112,7 @@ void luaF_close (lua_State *L, StkId level) {
 }
 
 
-Proto *luaF_newproto (lua_State *L) {
+Proto *luaF_newproto (inlua_State *L) {
   Proto *f = luaM_new(L, Proto);
   luaC_link(L, obj2gco(f), LUA_TPROTO);
   f->k = NULL;
@@ -138,7 +138,7 @@ Proto *luaF_newproto (lua_State *L) {
 }
 
 
-void luaF_freeproto (lua_State *L, Proto *f) {
+void luaF_freeproto (inlua_State *L, Proto *f) {
   luaM_freearray(L, f->code, f->sizecode, Instruction);
   luaM_freearray(L, f->p, f->sizep, Proto *);
   luaM_freearray(L, f->k, f->sizek, TValue);
@@ -149,7 +149,7 @@ void luaF_freeproto (lua_State *L, Proto *f) {
 }
 
 
-void luaF_freeclosure (lua_State *L, Closure *c) {
+void luaF_freeclosure (inlua_State *L, Closure *c) {
   int size = (c->c.isC) ? sizeCclosure(c->c.nupvalues) :
                           sizeLclosure(c->l.nupvalues);
   luaM_freemem(L, c, size);

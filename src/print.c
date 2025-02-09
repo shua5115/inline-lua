@@ -8,7 +8,7 @@
 #include <stdio.h>
 
 #define luac_c
-#define LUA_CORE
+#define INLUA_CORE
 
 #include "ldebug.h"
 #include "lobject.h"
@@ -53,16 +53,16 @@ static void PrintConstant(const Proto* f, int i)
  const TValue* o=&f->k[i];
  switch (ttype(o))
  {
-  case LUA_TNIL:
+  case INLUA_TNIL:
 	printf("nil");
 	break;
-  case LUA_TBOOLEAN:
+  case INLUA_TBOOLEAN:
 	printf(bvalue(o) ? "true" : "false");
 	break;
-  case LUA_TNUMBER:
-	printf(LUA_NUMBER_FMT,nvalue(o));
+  case INLUA_TNUMBER:
+	printf(INLUA_NUMBER_FMT,nvalue(o));
 	break;
-  case LUA_TSTRING:
+  case INLUA_TSTRING:
 	PrintString(rawtsvalue(o));
 	break;
   default:				/* cannot happen */
@@ -163,7 +163,7 @@ static void PrintHeader(const Proto* f)
  const char* s=getstr(f->source);
  if (*s=='@' || *s=='=')
   s++;
- else if (*s==LUA_SIGNATURE[0])
+ else if (*s==INLUA_SIGNATURE[0])
   s="(bstring)";
  else
   s="(string)";

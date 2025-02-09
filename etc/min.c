@@ -9,21 +9,21 @@
 #include "inlua.h"
 #include "inlauxlib.h"
 
-static int print(lua_State *L)
+static int print(inlua_State *L)
 {
- int n=lua_gettop(L);
+ int n=inlua_gettop(L);
  int i;
  for (i=1; i<=n; i++)
  {
   if (i>1) printf("\t");
-  if (lua_isstring(L,i))
-   printf("%s",lua_tostring(L,i));
-  else if (lua_isnil(L,i))
+  if (inlua_isstring(L,i))
+   printf("%s",inlua_tostring(L,i));
+  else if (inlua_isnil(L,i))
    printf("%s","nil");
-  else if (lua_isboolean(L,i))
-   printf("%s",lua_toboolean(L,i) ? "true" : "false");
+  else if (inlua_isboolean(L,i))
+   printf("%s",inlua_toboolean(L,i) ? "true" : "false");
   else
-   printf("%s:%p",luaL_typename(L,i),lua_topointer(L,i));
+   printf("%s:%p",inluaL_typename(L,i),inlua_topointer(L,i));
  }
  printf("\n");
  return 0;
@@ -31,9 +31,9 @@ static int print(lua_State *L)
 
 int main(void)
 {
- lua_State *L=lua_open();
- lua_register(L,"print",print);
- if (luaL_dofile(L,NULL)!=0) fprintf(stderr,"%s\n",lua_tostring(L,-1));
- lua_close(L);
+ inlua_State *L=inlua_open();
+ inlua_register(L,"print",print);
+ if (inluaL_dofile(L,NULL)!=0) fprintf(stderr,"%s\n",inlua_tostring(L,-1));
+ inlua_close(L);
  return 0;
 }
