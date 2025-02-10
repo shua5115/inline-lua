@@ -23,6 +23,15 @@
 #include <paths.h>
 #elif defined(INLUA_WIN)
 #include <windows.h>
+#include <fcntl.h>
+
+// NOTE: handle is closed by this function.
+FILE* Handle2Stream(HANDLE h, const char *mode) {
+  int fd = _open_osfhandle((intptr_t)h, _O_BINARY);
+  if (fd < 0) return NULL;
+  return _fdopen(fd, mode);
+}
+
 #endif
 
 #define IO_INPUT	1
@@ -185,72 +194,214 @@ static int io_popen (inlua_State *L) {
 }
 
 
-static int io_popen2 (inlua_State *L) {
+static int io_subprocess (inlua_State *L) {
   size_t filename_len = 0;
   const char *filename = inluaL_checklstring(L, 1, &filename_len);
 #if defined(INLUA_USE_POSIX)
   int cpid;
   int cin[2];
   int cout[2];
+  int cerr[2];
   FILE **istream;
   FILE **ostream;
+  FILE **estream;
 
-  if (pipe(cin)) {
+  if (0 != pipe(cin)) {
     inlua_pushnil(L);
-    return 1+pushresult(L, 0, NULL);
+    inlua_pushnil(L);
+    return 2+pushresult(L, 0, NULL);
   }
-  if (pipe(cout)) {
+  if (0 != pipe(cout)) {
     (void)close(cin[0]);
     (void)close(cin[1]);
     inlua_pushnil(L);
-    return 1+pushresult(L, 0, NULL);
+    inlua_pushnil(L);
+    return 2+pushresult(L, 0, NULL);
+  }
+  if (0 != pipe(cerr)) {
+    (void)close(cin[0]);
+    (void)close(cin[1]);
+    (void)close(cout[0]);
+    (void)close(cout[1]);
+    inlua_pushnil(L);
+    inlua_pushnil(L);
+    return 2+pushresult(L, 0, NULL);
   }
   cpid = fork();
   if (cpid == 0) {
-    char *argp[] = {"sh", "-c", NULL, NULL};
     // child process
-    if (0 > dup2(cin[0], STDIN_FILENO) || 0 > dup2(cout[1], STDOUT_FILENO)) {
+    if (0 > dup2(cin[0], STDIN_FILENO) || 0 > dup2(cout[1], STDOUT_FILENO) || 0 > dup2(cerr[1], STDERR_FILENO)) {
       _Exit(127);
     }
-    (void)close(cin[0]); (void)close(cin[1]); (void)close(cout[0]); (void)close(cout[1]);
-    // need to copy string before it is gc'd in lua
-    argp[2] = malloc(filename_len+1);
-    if (argp[2] == NULL) {
-      _Exit(1);
-    }
-    strncpy(argp[2], filename, filename_len);
-    argp[2][filename_len] = 0;
-    inlua_close(L); // need to close all open files in the state before exec
-    execv(_PATH_BSHELL, argp);
+    (void)close(cin[0]); (void)close(cin[1]); (void)close(cout[0]); (void)close(cout[1]); (void)close(cerr[0]); (void)close(cerr[1]);
+    execl(_PATH_BSHELL, "sh", "-c", filename, NULL);
     _Exit(127);
   }
 
   (void)close(cin[0]);
   (void)close(cout[1]);
+  (void)close(cerr[1]);
 
   ostream = newfile(L);
   *ostream = fdopen(cout[0], "r");
   if (NULL == *ostream) {
     (void)close(cout[0]);
     (void)close(cin[1]);
+    (void)close(cerr[0]);
     inlua_pushnil(L);
-    return 1+pushresult(L, 0, NULL);
+    inlua_pushnil(L);
+    return 2+pushresult(L, 0, NULL);
   }
   istream = newfile(L);
   *istream = fdopen(cin[1], "w");
   if (NULL == *istream) {
     (void)fclose(*ostream);
     (void)close(cin[1]);
+    (void)close(cerr[0]);
     inlua_pushnil(L);
-    return 1+pushresult(L, 0, NULL);
+    inlua_pushnil(L);
+    return 2+pushresult(L, 0, NULL);
   }
-  return 2;
+  estream = newfile(L);
+  *estream = fdopen(cerr[0], "r");
+  if (NULL == *estream) {
+    (void)fclose(*ostream);
+    (void)fclose(*istream);
+    (void)close(cerr[0]);
+    inlua_pushnil(L);
+    inlua_pushnil(L);
+    return 2+pushresult(L, 0, NULL);
+  }
+  return 3;
 #elif defined(INLUA_WIN)
-  (void) filename;
-  return inluaL_error(L, INLUA_QL("popen2") " not supported"); // TODO windows implementation
+  HANDLE cin_rd;
+  HANDLE cin_wr;
+  HANDLE cout_rd;
+  HANDLE cout_wr;
+  HANDLE cerr_rd;
+  HANDLE cerr_wr;
+  FILE **istream;
+  FILE **ostream;
+  FILE **estream;
+  SECURITY_ATTRIBUTES sa = {0};
+  PROCESS_INFORMATION pi = {0};
+  STARTUPINFO si = {0};
+  int success;
+
+  sa.nLength = sizeof(SECURITY_ATTRIBUTES);
+  sa.bInheritHandle = 1;
+  sa.lpSecurityDescriptor = NULL;
+
+  if (!CreatePipe(&cout_rd, &cout_wr, &sa, 0)) {
+    inlua_pushnil(L);
+    inlua_pushnil(L);
+    inlua_pushnil(L);
+    inlua_pushstring(L, "failed to create pipe");
+    return 4;
+  }
+
+  if (!SetHandleInformation(cout_rd, HANDLE_FLAG_INHERIT, 0) || !CreatePipe(&cin_rd, &cin_wr, &sa, 0)) {
+    CloseHandle(cout_rd);
+    CloseHandle(cout_wr);
+    inlua_pushnil(L);
+    inlua_pushnil(L);
+    inlua_pushnil(L);
+    inlua_pushstring(L, "failed to create pipe");
+    return 4;
+  }
+
+  if (!SetHandleInformation(cin_wr, HANDLE_FLAG_INHERIT, 0) || !CreatePipe(&cerr_rd, &cerr_wr, &sa, 0)) {
+    CloseHandle(cout_rd);
+    CloseHandle(cout_wr);
+    CloseHandle(cin_rd);
+    CloseHandle(cin_wr);
+    inlua_pushnil(L);
+    inlua_pushnil(L);
+    inlua_pushnil(L);
+    inlua_pushstring(L, "failed to create pipe");
+    return 4;
+  }
+
+  if (!SetHandleInformation(cerr_rd, HANDLE_FLAG_INHERIT, 0)) {
+    CloseHandle(cout_rd);
+    CloseHandle(cout_wr);
+    CloseHandle(cin_rd);
+    CloseHandle(cin_wr);
+    CloseHandle(cerr_rd);
+    CloseHandle(cerr_wr);
+    inlua_pushnil(L);
+    inlua_pushnil(L);
+    inlua_pushnil(L);
+    inlua_pushstring(L, "failed to create pipe");
+    return 4;
+  }
+
+  si.cb = sizeof(si);
+  si.dwFlags = STARTF_USESTDHANDLES;
+  si.hStdOutput = cout_wr;
+  si.hStdInput = cin_rd;
+  si.hStdError = cerr_wr;
+
+  success = CreateProcess(NULL,
+    filename, // command to run
+    NULL, // default process security
+    NULL, // default thread security
+    TRUE, // inherit handles
+    0, // flags
+    NULL, // default environment
+    NULL, // inherit cwd
+    &si,
+    &pi
+  );
+  if (!success) {
+    inlua_pushnil(L);
+    inlua_pushnil(L);
+    inlua_pushnil(L);
+    inlua_pushstring(L, "failed to run command");
+    return 4;
+  }
+  // close child's handles
+  CloseHandle(pi.hProcess);
+  CloseHandle(pi.hThread);
+  CloseHandle(cout_wr);
+  CloseHandle(cin_rd);
+  CloseHandle(cerr_wr);
+
+  ostream = newfile(L);
+  *ostream = Handle2Stream(cout_rd, "r");
+  if (NULL == *ostream) {
+    CloseHandle(cout_rd);
+    CloseHandle(cin_wr);
+    CloseHandle(cerr_rd);
+    inlua_pushnil(L);
+    inlua_pushnil(L);
+    return 2+pushresult(L, 0, NULL);
+  }
+  istream = newfile(L);
+  *istream = Handle2Stream(cin_wr, "w");
+  if (NULL == *istream) {
+    fclose(*ostream);
+    CloseHandle(cin_wr);
+    inlua_pushnil(L);
+    inlua_pushnil(L);
+    return 2+pushresult(L, 0, NULL);
+  }
+  estream = newfile(L);
+  *estream = Handle2Stream(cerr_rd, "r");
+  if (NULL == *estream) {
+    fclose(*ostream);
+    fclose(*istream);
+    inlua_pushnil(L);
+    inlua_pushnil(L);
+    return 2+pushresult(L, 0, NULL);
+  }
+  return 3;
 #else
   (void) filename;
-  return inluaL_error(L, INLUA_QL("popen2") " not supported");
+  inlua_pushnil(L);
+  inlua_pushnil(L);
+  inlua_pushstring(L, INLUA_QL("popen2") " not supported");
+  return 3;
 #endif
 }
 
@@ -560,7 +711,7 @@ static const inluaL_Reg iolib[] = {
   {"open", io_open},
   {"output", io_output},
   {"popen", io_popen},
-  {"popen2", io_popen2},
+  {"subprocess", io_subprocess},
   {"read", io_read},
   {"tmpfile", io_tmpfile},
   {"type", io_type},
