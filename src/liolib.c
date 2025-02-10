@@ -400,7 +400,7 @@ static int io_subprocess (inlua_State *L) {
   (void) filename;
   inlua_pushnil(L);
   inlua_pushnil(L);
-  inlua_pushstring(L, INLUA_QL("popen2") " not supported");
+  inlua_pushstring(L, INLUA_QL("subprocess") " not supported");
   return 3;
 #endif
 }
