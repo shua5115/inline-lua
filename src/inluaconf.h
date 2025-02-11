@@ -85,21 +85,21 @@
 ** In Windows, any exclamation mark ('!') in the path is replaced by the
 ** path of the directory of the executable file of the current process.
 */
-#define INLUA_LDIR	"!\\lua\\"
+#define INLUA_LDIR	"!\\inlua\\"
 #define INLUA_CDIR	"!\\"
 #define INLUA_PATH_DEFAULT  \
-		".\\?.lua;"  INLUA_LDIR"?.lua;"  INLUA_LDIR"?\\init.lua;" \
-		             INLUA_CDIR"?.lua;"  INLUA_CDIR"?\\init.lua"
+		".\\?.inlua;"  INLUA_LDIR"?.inlua;"  INLUA_LDIR"?\\init.inlua;" \
+		             INLUA_CDIR"?.inlua;"  INLUA_CDIR"?\\init.inlua"
 #define INLUA_CPATH_DEFAULT \
 	".\\?.dll;"  INLUA_CDIR"?.dll;" INLUA_CDIR"loadall.dll"
 
 #else
 #define INLUA_ROOT	"/usr/local/"
-#define INLUA_LDIR	INLUA_ROOT "share/lua/5.1/"
-#define INLUA_CDIR	INLUA_ROOT "lib/lua/5.1/"
+#define INLUA_LDIR	INLUA_ROOT "share/inlua/5.1/"
+#define INLUA_CDIR	INLUA_ROOT "lib/inlua/5.1/"
 #define INLUA_PATH_DEFAULT  \
-		"./?.lua;"  INLUA_LDIR"?.lua;"  INLUA_LDIR"?/init.lua;" \
-		            INLUA_CDIR"?.lua;"  INLUA_CDIR"?/init.lua"
+		"./?.inlua;"  INLUA_LDIR"?.inlua;"  INLUA_LDIR"?/init.inlua;" \
+		            INLUA_CDIR"?.inlua;"  INLUA_CDIR"?/init.inlua"
 #define INLUA_CPATH_DEFAULT \
 	"./?.so;"  INLUA_CDIR"?.so;" INLUA_CDIR"loadall.so"
 #endif

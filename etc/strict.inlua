@@ -1,0 +1,35 @@
+--
+-- strict.inlua
+-- checks uses of undeclared global variables
+-- All global variables must be 'declared' through a regular assignment
+-- (even assigning nil will do) in a main chunk before being used
+-- anywhere or assigned to inside a function.
+--
+
+@getinfo, error, rawset, rawget = debug.getinfo, error, rawset, rawget
+
+@mt = {
+  .declared = {}
+}
+
+@what = [](
+  @d = getinfo(3, "S")
+  ^^ d & d.what | "C"
+)
+
+mt.__newindex = [t, n, v](
+  
+  mt.__declared.(n) | (
+    @w = what();
+    (w != "main" & w != "C") & error("assign to undeclared variable '"..n.."'", 2);
+    mt.__declared.(n) = ();
+  )
+  rawset(t, n, v)
+)
+  
+mt.__index = [t, n](
+  ((!mt.__declared.(n)) & what() != "C") & error("variable '"..n.."' is not declared", 2)
+  ^^ rawget(t, n)
+)
+
+setmetatable(_G, mt)

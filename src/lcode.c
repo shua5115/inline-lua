@@ -4,7 +4,6 @@
 ** See Copyright Notice in inlua.h
 */
 
-#include <stdio.h> // TODO REMOVE!!!
 #include <stdlib.h>
 
 #define lcode_c

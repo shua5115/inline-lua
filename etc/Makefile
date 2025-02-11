@@ -19,13 +19,13 @@ default:
 	@echo 'Please choose a target: min noparser one strict clean'
 
 min:	min.c
-	$(CC) $(CFLAGS) $@.c -L$(LIB) -llua $(MYLIBS)
-	echo 'print"Hello there!"' | ./a.out
+	$(CC) $(CFLAGS) $@.c -L$(LIB) -linlua $(MYLIBS)
+	echo "print('Hello there!')" | ./a.out
 
 noparser: noparser.o
-	$(CC) noparser.o $(SRC)/lua.o -L$(LIB) -llua $(MYLIBS)
-	$(BIN)/luac $(TST)/hello.lua
-	-./a.out luac.out
+	$(CC) noparser.o $(SRC)/lua.o -L$(LIB) -linlua $(MYLIBS)
+	$(BIN)/inluac $(TST)/hello.lua
+	-./a.out inluac.out
 	-./a.out -e'a=1'
 
 one:
@@ -33,12 +33,12 @@ one:
 	./a.out $(TST)/hello.lua
 
 strict:
-	-$(BIN)/lua -e 'print(a);b=2'
-	-$(BIN)/lua -lstrict -e 'print(a)'
-	-$(BIN)/lua -e 'function f() b=2 end f()'
-	-$(BIN)/lua -lstrict -e 'function f() b=2 end f()'
+	-$(BIN)/inlua -e 'print(a);b=2'
+	-$(BIN)/inlua -lstrict -e 'print(a)'
+	-$(BIN)/inlua -e 'f=[](b=2) f()'
+	-$(BIN)/inlua -lstrict -e 'f=[](b=2) f()'
 
 clean:
-	$(RM) a.out core core.* *.o luac.out
+	$(RM) a.out core core.* *.o inluac.out
 
 .PHONY:	default min noparser one strict clean
