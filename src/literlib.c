@@ -807,15 +807,15 @@ static int range_aux (inlua_State *L) {
   inlua_Number cur = inlua_tonumber(L, inlua_upvalueindex(1));
   inlua_Number stop = inlua_tonumber(L, inlua_upvalueindex(2));
   inlua_Number step = inlua_tonumber(L, inlua_upvalueindex(3));
-  inlua_pushnumber(L, cur);
-  cur += step;
   if (step > 0 && cur > stop) {
     return 0;
   }
   if (step < 0 && cur < stop) {
     return 0;  
   }
-  inlua_pushvalue(L, -1);
+  inlua_pushnumber(L, cur);
+  cur += step;
+  inlua_pushnumber(L, cur);
   inlua_replace(L, inlua_upvalueindex(1));
   return 1;
 }

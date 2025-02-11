@@ -23,7 +23,7 @@
 #include "lstring.h"
 #include "lundump.h"
 
-#define PROGNAME	"luac"		/* default program name */
+#define PROGNAME	"inluac"		/* default program name */
 #define	OUTPUT		PROGNAME ".out"	/* default output file */
 
 static int listing=0;			/* list bytecodes? */

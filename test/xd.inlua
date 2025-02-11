@@ -1,0 +1,15 @@
+-- hex dump
+-- usage: inlua xd.inlua < file
+
+@offset=0
+? 1 -> (
+    @s=io.read(16)
+    s==nil & ^^;
+    io.write(string.format("%08X  ",offset))
+    string.gsub(s,"(.)",
+        [c]( io.write(string.format("%02X ",string.byte(c))) )
+    )
+    io.write(string.rep(" ",3*(16-string.len(s))))
+    io.write(" ",string.gsub(s,"%c","."),"\n") 
+    offset=offset+16
+)

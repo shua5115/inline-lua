@@ -1,0 +1,13 @@
+-- example of for with generator functions
+
+generatefib = [n](
+  ^^coroutine.wrap([](
+    @a, b = 1, 1
+    ? a <= n -> (
+      coroutine.yield(a)
+      a,b=b,a+b
+    )
+  ))
+)
+
+iter(generatefib(1000)):foreach([v](print(v)))
