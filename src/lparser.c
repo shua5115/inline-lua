@@ -948,6 +948,17 @@ static int block_follow (int token) {
   }
 }
 
+// If the next token cannot be the start of a break/return expression
+static int return_break_follow (int token) {
+  switch(token) {
+    case ')': case TK_EOS: // end of block
+    case TK_BREAK: case TK_RETURN: // prevent chaining returns/breaks unecessarily
+      return 1;
+    default:
+      return 0;
+  }
+}
+
 
 static void block (LexState *ls, expdesc *e) {
   /* block -> chunk */
@@ -1129,7 +1140,7 @@ static void breakstat (LexState *ls) {
   
   
   // load optional returned value into breakable block's first temporary register
-  if (block_follow(ls->t.token) || ls->t.token == ';')
+  if (return_break_follow(ls->t.token) || ls->t.token == ';')
     luaK_nil(fs, bl->freereg, 1);
   else {
     expr(ls, &r);
@@ -1409,7 +1420,7 @@ static void retstat (LexState *ls) {
   expdesc e;
   int first, nret;  /* registers with returned values */
   // luaX_next(ls);  /* RETURN skipped by caller */
-  if (block_follow(ls->t.token) || ls->t.token == ';')
+  if (return_break_follow(ls->t.token) || ls->t.token == ';')
     first = nret = 0;  /* return no values */
   else {
     nret = explist1(ls, &e);  /* optional return values */

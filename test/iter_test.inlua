@@ -1,0 +1,54 @@
+@t1 = {1, 2, 3, 4}
+@t2 = {"a", "b", "c", "d"}
+
+print("foreach")
+iter(ipairs(t2)):foreach([k,v](print(k,v)))
+
+assert( iter(ipairs(t1)):reduce([a, i, v](^^a+v)) == 10 )
+
+assert( iter(ipairs(t1)):fold(10, [a, i, v](^^a+v)) == 20 )
+
+assert( iter(pairs(t2)):count() == 4 )
+
+assert( iter(ivals(t2)):last() == "d" )
+
+assert( iter(ivals(t2)):nth(2) == "b" )
+
+@t3 = iter(ivals(t2)):collect()
+
+assert( iter(ivals(t2)):compare(iter(ivals(t3))) == 0 )
+
+assert( iter(ivals(t1)):all([v](^^v>0)) )
+
+assert( iter(ivals(t1)):any([v](^^v==3)) )
+
+assert( iter(ipairs(t2)):find([i,v](^^v=="c")) == 3 )
+
+assert( iter(ipairs(t2)):position([i,v](^^v=="c")) == 3 )
+
+assert( iter(ivals(t1)):min() == 1 )
+
+assert( iter(ivals(t1)):min([a,b](^^a<b)) == 1 )
+
+assert( iter(ivals(t1)):max() == 4 )
+
+assert( iter(ivals(t1)):max([a,b](^^a<b)) == 4 )
+
+assert( iter(ivals(t1)):map([v](^^t2.(v))):compare(iter(ivals(t2))) == 0 )
+
+assert( iter(ivals(t1)):chain(iter(ivals(t2))):count() == 8)
+
+assert( iter(ivals(t1)):filter([v](^^v<=2)):count() == 2 )
+
+print("enumerate")
+iter(ivals(t2)):enumerate():foreach([i,v](print(i,v)))
+
+print("inspect and skip")
+assert(
+    iter(ivals(t1)):
+    inspect([v](print("check:", v))):
+    skip(2):inspect([v](print("used: ", v))):
+    count() == 2
+)
+
+assert( iter(ivals(t1)):take(2):count() == 2 )
