@@ -799,25 +799,6 @@ static const inluaL_Reg iterlib[] = {
 };
 
 
-// expects three upvalues in order: func, state, key
-static int iter_wrap_stateless(inlua_State *L) {
-  int first = inlua_gettop(L)+1;
-  inlua_pushvalue(L, inlua_upvalueindex(1));
-  inlua_pushvalue(L, inlua_upvalueindex(2));
-  inlua_pushvalue(L, inlua_upvalueindex(3));
-  inlua_call(L, 2, INLUA_MULTRET); // sets top, first points to first return value
-  if (!inlua_isnone(L, first)) inlua_pushvalue(L, first);
-  else inlua_pushnil(L);
-  inlua_replace(L, inlua_upvalueindex(3)); // key = first
-  if (inlua_isnoneornil(L, first)) return 0;
-  return 1+inlua_gettop(L)-first;
-  // 4,  5,  6 -> 6-4 = 2, need 3 returns so add 1
-  // ^first  ^top
-  // 1,  -> 1-1=0, need 1 return, so add 1
-  // ^first,top
-}
-
-
 // expects 3 upvalues:
 // 1. current index
 // 2. final value
@@ -880,13 +861,33 @@ static int inlua_values(inlua_State *L) {
 }
 
 
+// expects three upvalues in order: func, state, key
+static int iter_wrap_stateless(inlua_State *L) {
+  int first = inlua_gettop(L)+1;
+  inlua_pushvalue(L, inlua_upvalueindex(1));
+  inlua_pushvalue(L, inlua_upvalueindex(2));
+  inlua_pushvalue(L, inlua_upvalueindex(3));
+  inlua_call(L, 2, INLUA_MULTRET); // sets top, first points to first return value
+  if (!inlua_isnone(L, first)) inlua_pushvalue(L, first);
+  else inlua_pushnil(L);
+  inlua_replace(L, inlua_upvalueindex(3)); // key = first
+  if (inlua_isnoneornil(L, first)) return 0;
+  return 1+inlua_gettop(L)-first;
+  // 4,  5,  6 -> 6-4 = 2, need 3 returns so add 1
+  // ^first  ^top
+  // 1,  -> 1-1=0, need 1 return, so add 1
+  // ^first,top
+}
+
 static int inlua_itercreate(inlua_State *L) {
   if(inlua_isfunction(L, 1)) {
     inlua_createtable(L, 0, 1);
     inlua_pushvalue(L, 1);
-    (void) inluaL_opt(L, inlua_pushvalue, 2, inlua_pushnil(L));
-    (void) inluaL_opt(L, inlua_pushvalue, 3, inlua_pushnil(L));
-    inlua_pushcclosure(L, iter_wrap_stateless, 3);
+    if (!inlua_isnone(L, 2) || !inlua_isnone(L, 3)) {
+      (void) inluaL_opt(L, inlua_pushvalue, 2, inlua_pushnil(L));
+      (void) inluaL_opt(L, inlua_pushvalue, 3, inlua_pushnil(L));
+      inlua_pushcclosure(L, iter_wrap_stateless, 3);
+    }
     inlua_setfield(L, -2, "next");
     inluaL_getmetatable(L, ITER_TYPENAME);
     inlua_setmetatable(L, -2);
