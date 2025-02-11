@@ -21,23 +21,24 @@ HISTORY for Inline, based on Lua 5.1.5
     * The last statement in a block, if not followed by a semicolon, will have its value returned, e.g. `3*(print(); 2+1)` returns 9 while `3*(print(); 2+1;)` does not. This allows blocks to take the place of sub-expressions seamlessly while retaining their ability to execute multiple lines of code.
     * An empty block `()`, or any block which returns no values, evaluates to true. This ensures ternary expressions work as expected with blocks: `condition & (true_code;) | (false_code;)`.
     * Blocks can return multiple values when used as the last argument in a function call or return statement: `io.write(1,2,(3,4))` prints "1234".
-    * In a block, if the last expression is varargs (`...`) or a function call, that expression will only return one value. The number of return values for a block must be known at compile time.
-    * A block in the middle of an expression list will only return one value. This matches the behavior of other multi-return expressions like function calls or varargs.
-  * For and repeat-until loops no longer exist. A library of iterator functions is planned as a replacement.
+    * In a block, if the last returned expression is varargs (`...`) or a function call, that expression will only return one value. The number of return values for a block must be known at compile time.
+    * A block in the middle of an expression list will only return one value. At the end of the list, it will return all of its values, or true if no value is returned. This matches the behavior of other multi-return expressions.
+  * For and repeat-until loops no longer exist. A library of iterator functions replaces for loops, and while loops with a block as the condition can serve as a repeat-until loop.
   * Table key assignment with an expression is `{.(expression)=expression}`, instead of `{[expression]=expression}` to distinguish from function definition, and to be consistent with table indexing syntax.
   * Table field assignment is `{.field=value}` to be consistent with the above change, and to further distinguish inlua tables from lua tables.
   * Return and break statements can be used where an expression is expected.
     * This is so ternaries can break or return without needing to enter a block: `@a = v | ^~, "error, missing value"`
   * Lists of expressions on their own, like `f(),g(),h()`, are still expressions. Expression lists are evaluated left-to-right.
-  * Functions can only be called with parenthesis, so this syntax is now illegal: `print "arg"` or `print {table}`
+  * Functions can only be called with parenthesis, so this syntax is no longer calls the function: `print "arg"` or `print {table}`
     * There are two reasons for this. The first is that all expressions are statements, so there is ambiguity between this as a function call and this as two consecutive statements. The second is that having only one way to call a function increases the consistency and readability of code.
 
   Per File:
   
-  ### Makefile(s):
+  ### Makefiles:
   * Renamed interpreter from `lua` to `inlua`
   * Renamed compiler from `luac` to `inluac`
   * Repeated the above where necessary.
+  * Added files for iterator library
 
   ### llex.h:
   * Removed all token types associated with reserved words.
@@ -150,19 +151,17 @@ HISTORY for Inline, based on Lua 5.1.5
 
   ### lcode.c:
   * Implemented `luaK_blockresults2regs`
-  * `discharge2reg`: added VBLOCK case which stores a single returned value or nil.
+  * `discharge2reg`: added VBLOCK case which stores a single returned value or true.
 
   ### liolib.c:
-  * TODO add function io_popen2, which allows reading and writing from a child process by returning two files.
+  * Added function io_popen2, which allows reading and writing from a child process by returning three files: stdout, stdin, and stderr.
+    * Implemented on Posix and Windows
 
   ### lstrlib.c:
   * Renamed `createmetatable` to `registermetatable`, better describing the following changes:
   * A string's metatable is now the string library table itself, not an intermediate table. This makes the __index metamethod faster.
-  * Changed `__index` metamethod of string metatable to a function. The function first checks if the string metatable contains the desired key, returning the result. If the key does not exist, then the string data is indexed with an integer using the following function:
-  * Added `at(str, index)` function to string library, which indexes a single character from a string, returning nil if out of range. The __index metamethod calls this function if the string library does not contain the desired key.
-
-  ### ltablib.c
-  * `addfield`: Removed indent from final expression to avoid compiler warning.
+  * Changed `__index` metamethod of string metatable to a function. The function first checks if the key is a number. If so, index into the string, returning a single character. Otherwise, index the string metatable.
+  * Added `at(str, index)` function to string library, which indexes a single character from a string, returning nil if out of range. The __index metamethod calls this function if the key is a number.
 
 
 (end of HISTORY)

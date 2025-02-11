@@ -56,12 +56,11 @@ static int str_sub (inlua_State *L) {
 static int str_index (inlua_State *L) {
   size_t l;
   const char *s = inluaL_checklstring(L, 1, &l);
-  if (l == 0) {
-    inlua_pushliteral(L, "");
+  ptrdiff_t idx = inluaL_checkinteger(L, 2);
+  if (idx < 1 || idx > (ptrdiff_t)l) {
+    inlua_pushnil(L);
     return 1;
   }
-  ptrdiff_t idx = inluaL_checkinteger(L, 2);
-  if (idx < 1 || idx > (ptrdiff_t)l) return 0;
   inlua_pushlstring(L, s+(idx-1), 1);
   return 1;
 }
@@ -837,15 +836,11 @@ static int str_format (inlua_State *L) {
 
 
 static int str_meta_index (inlua_State *L) {
+  if (inlua_isnumber(L, 2))
+    return str_index(L);
   inlua_getmetatable(L, 1); // get string library (a string's metatable)
   inlua_pushvalue(L, 2); // push key
   inlua_rawget(L, -2); // rawget(string library table, key)
-  if (inlua_isnil(L, -1)) {
-    inlua_pop(L, 2); // pop nil and string library table, resetting the stack
-    if (inlua_isnumber(L, 2))
-      return str_index(L);
-    else return 0;
-  }
   return 1; // return result of rawget
 }
 
