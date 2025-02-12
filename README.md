@@ -21,8 +21,8 @@ See the test directory for some sample programs.
   |`not`|`!`|
   |`local`|`@`|
   |`t[<expression>]`|`t.(<expression>)`|
-  |`{key=value}`|`{.key=value}`|
-  |`[<expression>]=value`|`{.(<expression)=value}`|
+  |`{ key=value }`|`{ .key=value }`|
+  |`{ [<expression>]=value }`|`{ .(<expression)=value }`|
   |`return <explist>`|`^^ <explist>`|
   |`break`|`^^^ <expression>`|
   |`do <block> end`|`(<block>)`|
