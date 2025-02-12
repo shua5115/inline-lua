@@ -10,4 +10,4 @@ generatefib = [n](
   ))
 )
 
-iter(generatefib(1000)):foreach([v](print(v)))
+?? [i] generatefib(1000) -> (print(i))

@@ -23,7 +23,6 @@ static const inluaL_Reg lualibs[] = {
   {INLUA_STRLIBNAME, inluaopen_string},
   {INLUA_MATHLIBNAME, inluaopen_math},
   {INLUA_DBLIBNAME, inluaopen_debug},
-  {INLUA_ITERLIBNAME, inluaopen_iter},
   {NULL, NULL}
 };
 

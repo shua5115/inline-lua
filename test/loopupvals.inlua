@@ -1,0 +1,16 @@
+-- testing upvalues being captured in loop break statements
+
+f = ?? i=1,10 -> (
+    i > 3 & ^^^[](
+        ^^i
+    )
+)
+
+assert(f() == 4)
+
+f = ? 1 -> (
+    @b = 256
+    ^^^[](^^b)
+)
+
+assert(f() == 256)

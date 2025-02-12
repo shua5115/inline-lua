@@ -23,7 +23,8 @@ HISTORY for Inlua, based on Lua 5.1
     * Blocks can return multiple values when used as the last argument in a function call or return statement: `io.write(1,2,(3,4))` prints "1234".
     * In a block, if the last returned expression is varargs (`...`) or a function call, that expression will only return one value. The number of return values for a block must be known at compile time.
     * A block in the middle of an expression list will only return one value. At the end of the list, it will return all of its values, or true if no value is returned. This matches the behavior of other multi-return expressions.
-  * For and repeat-until loops no longer exist. A library of iterator functions replaces for loops, and while loops with a block as the condition can serve as a repeat-until loop.
+  * Repeat-until loops no longer exist. While loops with a block as the condition can serve as a repeat-until loop.
+  * For loop syntax changed to use `??` as the prefix, and `[varlist]` as the variable list in generic for loops.
   * Table key assignment with an expression is `{.(expression)=expression}`, instead of `{[expression]=expression}` to distinguish from function definition, and to be consistent with table indexing syntax.
   * Table field assignment is `{.field=value}` to be consistent with the above change, and to further distinguish inlua tables from lua tables.
   * Return and break statements can be used where an expression is expected.
@@ -154,7 +155,7 @@ HISTORY for Inlua, based on Lua 5.1
   * `discharge2reg`: added VBLOCK case which stores a single returned value or true.
 
   ### liolib.c:
-  * Added function io_popen2, which allows reading and writing from a child process by returning three files: stdout, stdin, and stderr.
+  * Added function `subprocess`, which allows reading and writing from a child process by returning three files: stdout, stdin, and stderr.
     * Implemented on Posix and Windows
 
   ### lstrlib.c:

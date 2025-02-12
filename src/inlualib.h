@@ -39,9 +39,6 @@ INLUALIB_API int (inluaopen_debug) (inlua_State *L);
 #define INLUA_LOADLIBNAME	"package"
 INLUALIB_API int (inluaopen_package) (inlua_State *L);
 
-#define INLUA_ITERLIBNAME   "iter"
-INLUALIB_API int (inluaopen_iter) (inlua_State *L);
-
 
 /* open all previous libraries */
 INLUALIB_API void (inluaL_openlibs) (inlua_State *L); 

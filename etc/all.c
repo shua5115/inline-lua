@@ -34,6 +34,5 @@
 #include "loslib.c"
 #include "lstrlib.c"
 #include "ltablib.c"
-#include "literlib.c"
 
 #include "lua.c"

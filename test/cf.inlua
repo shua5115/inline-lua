@@ -1,14 +1,16 @@
-iter(range(-20,50-1,10)):foreach([c0](
-    io.write("C ")
-    iter(range(c0,c0+10-1)):foreach([c](
-        io.write(string.format("%3.0f ",c))
-    ))
+-- temperature conversion table (celsius to farenheit)
+
+?? c0=-20,50-1,10 -> (
+	io.write("C ")
+	?? c=c0,c0+10-1 -> (
+		io.write(string.format("%3.0f ",c))
+	)
 	io.write("\n")
 	
 	io.write("F ")
-	iter(range(c0,c0+10-1)):foreach([c](
+	?? c=c0,c0+10-1 -> (
 		f=(9/5)*c+32
 		io.write(string.format("%3.0f ",f))
-    ))
+	)
 	io.write("\n\n")
-))
+)
