@@ -837,7 +837,7 @@ static int inlua_range (inlua_State *L) {
 // expects 2 upvalues
 // 1. table
 // 2. previous index
-static int values_aux(inlua_State *L) {
+static int ivalues_aux(inlua_State *L) {
   inlua_Integer i;
   if (inlua_isnil(L, inlua_upvalueindex(1))) return 0;
   i = inlua_tointeger(L, inlua_upvalueindex(2));
@@ -852,10 +852,35 @@ static int values_aux(inlua_State *L) {
   return 1;
 }
 
-static int inlua_values(inlua_State *L) {
+static int inlua_ivalues(inlua_State *L) {
   inluaL_checkany(L, 1);
   inlua_pushvalue(L, 1);
   inlua_pushinteger(L, 0);
+  inlua_pushcclosure(L, ivalues_aux, 2);
+  return 1;
+}
+
+
+// expects 2 upvalues
+// 1. table
+// 2. previous key
+static int values_aux(inlua_State *L) {
+  if (inlua_isnil(L, inlua_upvalueindex(1))) return 0;
+  inlua_pushvalue(L, inlua_upvalueindex(2));
+  if(0 == inlua_next(L, inlua_upvalueindex(1))) {
+    inlua_pushnil(L);
+    inlua_replace(L, inlua_upvalueindex(1));
+    return 0;
+  }
+  inlua_pushvalue(L, -2);
+  inlua_replace(L, inlua_upvalueindex(2));
+  return 1;
+}
+
+static int inlua_values(inlua_State *L) {
+  inluaL_checkany(L, 1);
+  inlua_pushvalue(L, 1);
+  inlua_pushnil(L);
   inlua_pushcclosure(L, values_aux, 2);
   return 1;
 }
@@ -913,7 +938,8 @@ static int createitermeta(inlua_State *L) {
 INLUALIB_API int inluaopen_iter(inlua_State *L) {
   createitermeta(L);
   inlua_register(L, "range", inlua_range);
-  inlua_register(L, "ivals", inlua_values);
+  inlua_register(L, "values", inlua_values);
+  inlua_register(L, "ivalues", inlua_ivalues);
   inlua_pushcfunction(L, inlua_itercreate);
   inlua_pushvalue(L, -1);
   inlua_setglobal(L, "iter");
