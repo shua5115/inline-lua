@@ -42,7 +42,7 @@ const char *const luaX_tokens [] = {
     // "elseif",
     // "end", 
     // "false", 
-    // "for", 
+    "??", // for 
     // "function", 
     // "if",
     // "in", 
@@ -439,6 +439,11 @@ static int llex (LexState *ls, SemInfo *seminfo) {
           read_numeral(ls, seminfo);
           return TK_NUMBER;
         }
+      }
+      case '?': {
+        next(ls);
+        if (ls->current != '?') return '?';
+        else { next(ls); return TK_FOR; }
       }
       case EOZ: {
         return TK_EOS;

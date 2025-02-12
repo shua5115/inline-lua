@@ -924,11 +924,19 @@ static int inlua_itercreate(inlua_State *L) {
   return 1;
 }
 
+static int iter_meta_call(inlua_State *L) {
+  int start = inlua_gettop(L);
+  inlua_getfield(L, 1, "next");
+  inlua_call(L, 0, INLUA_MULTRET);
+  return inlua_gettop(L)-start;
+}
 
 static int createitermeta(inlua_State *L) {
   inluaL_newmetatable(L, ITER_TYPENAME);  /* create metatable for iterators */
   inlua_pushvalue(L, -1);  /* push metatable */
   inlua_setfield(L, -2, "__index");  /* metatable.__index = metatable */
+  inlua_pushcfunction(L, iter_meta_call);
+  inlua_setfield(L, -2, "__call");  /* metatable.__call = iter_meta_call */
   inluaL_register(L, NULL, iterlib);  /* iterator methods */
   return 1;
 }

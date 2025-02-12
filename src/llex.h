@@ -30,7 +30,7 @@ enum RESERVED {
   // TK_ELSEIF, 
   // TK_END, 
   // TK_FALSE, 
-  // TK_FOR, 
+  TK_FOR, 
   // TK_FUNCTION,
   // TK_IF, 
   // TK_IN, 
