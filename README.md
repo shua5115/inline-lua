@@ -81,19 +81,19 @@ See the test directory for some sample programs.
   To avoid unecessary table allocation, calling methods on an iterator will replace the table's `next` function, but not the table (unless otherwise stated).
   | Method           | Behavior         |
   | ---------------- | ---------------- |
-  **Consumers** use values from an iterator, returning a result
-  |`it:consume()`| Consumes the iterator's values until produces no more results. |
-  |`it:foreach(f)`| Calls `f(it.next())` until there are no more results. |
+  **Consumers** use values from an iterator, potentially returning a result.
+  |`it:consume()`| Consumes the iterator's values until produces no more results. Returns nothing. |
+  |`it:foreach(f)`| Calls `f(it.next())` until there are no more results. Returns nothing. |
   |`it:count()`| Returns the number of times the iterator produced a result. |
   |`it:last()`| Returns the last result list produced by the iterator. |
   |`it:nth(n)`| Returns the nth result list produced by the iterator. |
-  |`it:collect(t)`| Collects the results of the iterator into a table.<br>If the table is not provided, a table will be created.<br>An iterator returning single values will store its values in the table's array, starting from 1.<br>An iterator returning two values will store each result as key-value pairs. |
+  |`it:collect(t)`| Collects the results of the iterator into a table, returning it when finished.<br>If the table is not provided, a table will be created.<br>An iterator returning single values will store its values in the table's array, starting from 1.<br>An iterator returning two values will store each result as key-value pairs. |
   |`it:all(p)`| Returns if all elements in an iterator satisfy predicate `p`. |
   |`it:any(p)`| Returns if any elements in an iterator satisfy predicate `p`. |
   |`it:find(p)`| Returns the first result list that satisfies predicate `p`. |
   |`it:position(p)`| Returns the index of the first result list that satisfies predicate `p`. |
-  |`it:min()`| Returns the minimum value of the iterator. Only considers the first result in a result list. |
-  |`it:max()`| Returns the maximum value of the iterator. Only considers the first result in a result list. |
+  |`it:min(lt)`| Returns the minimum value of the iterator. Only considers the first result in a result list.<br>Can provide an optional less-than function for comparing elements.<br>If the next element is equal to the optimal, the next element becomes the optimal.|
+  |`it:max(lt)`| Returns the maximum value of the iterator. Only considers the first result in a result list.<br>Can provide an optional less-than function for comparing elements.<br>If the next element is equal to the optimal, the next element becomes the optimal.|
   |`it:compare(it2, comp)`| Lexicographically compares two iterators.<br>An optional comparison function can be provided to dictate how to compare iterator elements.<br>Both this and the comparison function returns 0 when equal, -1 when `it<it2` and 1 when `it>it2`.|
   |`it:fold(acc, f)`| Calls `f(acc, it.next())` until the iterator produces no more results. |
   |`it:reduce(f)`| Stores the first result into an accumulator, `@acc=it.next()`, then calls `it:fold(acc, f)`. |
@@ -112,9 +112,9 @@ See the test directory for some sample programs.
 
   `iter(f)` Creates a new iterator table with function f as the "next" function.
 
-  `iter(f, state, key)` Creates a new iterator wrapping the stateless iterator function f with a "next" function that stores its state.
+  `iter(f, state, key)` Creates a new iterator wrapping the stateless iterator function f in a function that manages its state.
 
-  `iter(t)` Expects the table t to have a "next" function. Overwrites the table's metatable with the iterator metatable.
+  `iter(t)` Expects the table t to have a "next" function. Sets the table's metatable to the iterator metatable.
 
   `range(start, stop, step)` Returns numbers from start to end, inclusive, stepping by step. Steps after every call. Works like numeric for loop arguments.
 
