@@ -108,7 +108,7 @@ static int doargs(int argc, char* argv[])
  }
  if (version)
  {
-  printf("%s  %s\n",INLUA_RELEASE,INLUA_COPYRIGHT);
+  printf("%s\n",INLUA_RELEASE);
   if (version==argc-1) exit(EXIT_SUCCESS);
  }
  return i;

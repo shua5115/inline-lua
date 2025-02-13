@@ -15,12 +15,14 @@
 
 #include "inluaconf.h"
 
-
-#define INLUA_VERSION	"Lua 5.1"
-#define INLUA_RELEASE	"Lua 5.1.5"
-#define INLUA_VERSION_NUM	501
-#define INLUA_COPYRIGHT	"Copyright (C) 1994-2012 Lua.org, PUC-Rio"
-#define INLUA_AUTHORS 	"R. Ierusalimschy, L. H. de Figueiredo & W. Celes"
+#define INLUA_VERSION "Inlua 1.0"
+#define INLUA_RELEASE "Inlua 1.0.0"
+#define INLUA_VERSION_NUM 100
+#define INLUA_LUA_VERSION	"Lua 5.1"
+#define INLUA_LUA_RELEASE	"Lua 5.1.5"
+#define INLUA_LUA_VERSION_NUM	501
+#define INLUA_LUA_COPYRIGHT	"Copyright (C) 1994-2012 Lua.org, PUC-Rio"
+#define INLUA_LUA_AUTHORS 	"R. Ierusalimschy, L. H. de Figueiredo & W. Celes"
 
 
 /* mark for precompiled code (`<esc>Lua') */

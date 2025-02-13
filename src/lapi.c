@@ -32,8 +32,8 @@
 
 
 const char lua_ident[] =
-  "$Lua: " INLUA_RELEASE " " INLUA_COPYRIGHT " $\n"
-  "$Authors: " INLUA_AUTHORS " $\n"
+  "$Inlua: " INLUA_RELEASE "based on " INLUA_LUA_RELEASE " " INLUA_LUA_COPYRIGHT " $\n"
+  "$Authors: " INLUA_LUA_AUTHORS " $\n"
   "$URL: www.lua.org $\n";
 
 

@@ -109,7 +109,7 @@ static int docall (inlua_State *L, int narg, int clear) {
 
 
 static void print_version (void) {
-  l_message(NULL, "Inlua, based on " INLUA_RELEASE "  " INLUA_COPYRIGHT);
+  l_message(NULL, INLUA_RELEASE ", based on " INLUA_LUA_RELEASE "  " INLUA_LUA_COPYRIGHT);
 }
 
 
