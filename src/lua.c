@@ -186,8 +186,8 @@ static int pushline (inlua_State *L, int firstline) {
     b[l-1] = '\0';  /* remove it */
   if (firstline && b[0] == '=')  /* first line starts with `=' ? */
     inlua_pushfstring(L, "^^ %s", b+1);  /* change it to `return' */
-  else if (firstline && b[0] != '^' && b[1] != '^')
-    inlua_pushfstring(L, "^^ %s", b);  /* change it to `return' */
+  else if (firstline)
+    inlua_pushfstring(L, "^^ %s", b);  /* `return' the first line by default */
   else
     inlua_pushstring(L, b);
   inlua_freeline(L, b);
@@ -196,12 +196,23 @@ static int pushline (inlua_State *L, int firstline) {
 
 
 static int loadline (inlua_State *L) {
-  int status;
+  int status, extra_len = 1;
   inlua_settop(L, 0);
   if (!pushline(L, 1))
     return -1;  /* no input */
   for (;;) {  /* repeat until gets a complete line */
     status = inluaL_loadbuffer(L, inlua_tostring(L, 1), inlua_strlen(L, 1), "=stdin");
+    if (status == INLUA_ERRSYNTAX) { // try again without the return prefix
+      extra_len = 0;
+      // pop return value
+      inlua_pop(L, 1);
+      // remove first bit from line
+      const char *b = inlua_tostring(L, 1);
+      b += 3; // remove '^^' from start
+      inlua_pushstring(L, b); // push new string
+      inlua_replace(L, 1); // replace old string
+      status = inluaL_loadbuffer(L, inlua_tostring(L, 1), inlua_strlen(L, 1), "=stdin");
+    }
     if (!incomplete(L, status)) break;  /* cannot try to add lines? */
     if (!pushline(L, 0))  /* no more input? */
       return -1;
@@ -209,7 +220,15 @@ static int loadline (inlua_State *L) {
     inlua_insert(L, -2);  /* ...between the two lines */
     inlua_concat(L, 3);  /* join them */
   }
-  inlua_saveline(L, 1);
+  if (extra_len) { // save the line without added return
+    const char *b = inlua_tostring(L, 1);
+    b += 3; // remove '^^ ' from start
+    inlua_pushstring(L, b); // push new string
+    inlua_replace(L, 1); // replace old string
+    inlua_saveline(L, 1);
+  } else {
+    inlua_saveline(L, 1);
+  }
   inlua_remove(L, 1);  /* remove line */
   return status;
 }
