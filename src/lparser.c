@@ -326,6 +326,7 @@ static void leaveblock (FuncState *fs, expdesc *e) {
   /* a block either controls scope or breaks (never both) */
   inlua_assert(!bl->isbreakable || !bl->upval);
   inlua_assert(bl->nactvar == fs->nactvar);
+  luaK_patchtohere(fs, bl->breaklist);
   if (e != NULL) {
     // set block
     init_exp(e, VBLOCK, ret_reg);
@@ -336,11 +337,14 @@ static void leaveblock (FuncState *fs, expdesc *e) {
       e->u.s.aux = e->u.s.info + 1; // returns one value always
     } else {
       e->u.s.aux = fs->freereg;
+      // If no values returned by the block, make into true bool
+      int n = e->u.s.aux - e->u.s.info;
+      if (n <= 0) init_exp(e, VTRUE, 0);
     }
   }
   // fs->freereg = fs->nactvar;  /* free registers */
   fs->freereg = bl->freereg;
-  luaK_patchtohere(fs, bl->breaklist);
+  // luaK_patchtohere(fs, bl->breaklist);
 }
 
 

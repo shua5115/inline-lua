@@ -186,6 +186,8 @@ static int pushline (inlua_State *L, int firstline) {
     b[l-1] = '\0';  /* remove it */
   if (firstline && b[0] == '=')  /* first line starts with `=' ? */
     inlua_pushfstring(L, "^^ %s", b+1);  /* change it to `return' */
+  else if (firstline && b[0] != '^' && b[1] != '^')
+    inlua_pushfstring(L, "^^ %s", b);  /* change it to `return' */
   else
     inlua_pushstring(L, b);
   inlua_freeline(L, b);
