@@ -16,7 +16,7 @@
 #include "inluaconf.h"
 
 #define INLUA_VERSION "Inlua 1.0"
-#define INLUA_RELEASE "Inlua 1.0.0"
+#define INLUA_RELEASE "Inlua 1.0.1"
 #define INLUA_VERSION_NUM 100
 #define INLUA_LUA_VERSION	"Lua 5.1"
 #define INLUA_LUA_RELEASE	"Lua 5.1.5"

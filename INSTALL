@@ -96,4 +96,14 @@ INSTALL for Lua 5.1
   As mentioned above, you may edit inluaconf.h to select some features before
   building Lua.
 
+
+  The simplest way to build for Windows is to use mingw from Linux.
+  Once mingw is installed, simply run
+```sh
+make mingw CC=<your preferred mingw toolchain>
+# e.g. for 64-bit Windows:
+make mingw CC=x86_64-w64-mingw32-gcc
+```
+  And you will find an exe and dll in the src folder.
+
 (end of INSTALL)
