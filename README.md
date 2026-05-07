@@ -7,11 +7,9 @@ See the test directory for some sample programs.
 * What is Inline Lua ("inlua")?
   ------------
   Inline Lua ("inlua") inherits its functionality from Lua 5.1, with some big changes to how the language looks and behaves.
-  Inlua was inspired by the ternary expression in lua, `condition and true_result or false_result`, specifically how it could replace an if-else in certain scenarios.
+  Inlua was inspired by the ternary expression in lua, `condition and true_result or false_result`, and how it could replace if-else in most scenarios.
   
-  ### Syntax
-  Inlua changes the syntax of lua significantly to differentiate itself.
-  These are the changes to lua's syntax:
+  ### Syntax Changes
   | Lua              | Inlua            |
   | ---------------: | :--------------- |
   |`nil`|`~`|
@@ -22,9 +20,10 @@ See the test directory for some sample programs.
   |`local`|`@`|
   |`t[<expression>]`|`t.(<expression>)`|
   |`{ key=value }`|`{ .key=value }`|
-  |`{ [<expression>]=value }`|`{ .(<expression)=value }`|
+  |`{ [<expression>]=value }`|`{ .(<expression>)=value }`|
   |`return <explist>`|`^^ <explist>`|
-  |`break`|`^^^ <expression>`|
+  |`break`|`^^^`|
+  |(is illegal)|`^^^ <expression>`<br>Break from a loop with a value. Loops are nil by default.|
   |`do <block> end`|`(<block>)`|
   |`while <cond> do <body> end`|`? <cond> -> (<body>)`|
   |`for var=start,stop,<step> do <body> end`|`?? var=start,stop,<step> -> (body)`|
@@ -37,18 +36,18 @@ See the test directory for some sample programs.
   |(is illegal)|return and break statements can be used in place of expressions:<br>`var = errcond & ^^~,"error"; \| okval`|
   |`true`|`()` block that returns no value is true|
   |`false`|`!()` or `~`, nil can be used as false in most cases, but is not a boolean|
+  |`true`|`?1->(^^^), ??i=1,10->()` loop with no break value is true|
 
   ### Semantics
-  Inlua's makes any expression a statement, and allows blocks to run code and return values.
-  These two changes allow ternary expressions to fully replace if-else statements:
+  In Inlua, every expression is a statement and blocks can run code *and* return values.
+  These two semantic changes allow ternary expressions to fully replace if-else statements:
   ```
-  condition & (true code;) | (false code;)
+  condition & (true code) | (false code)
   ```
-  Blocks evaluate to true by default, allowing the ternary expression to work as an if-else consistently.
+  Blocks and loops evaluate to true by default, allowing the ternary expression to work like if-else.
   However, if a block's last expression is not followed by ';', the block returns the value of that expression:
   ```
-  condition & (true_result) | (false_result) -- warning: if true result is false, false result will be returned
-  three=(1+2) -- this still works as expected
+  condition & (result_a) | (result_b) -- warning: if result_a is false, result_b result will be returned instead
   ```
   Expression lists can also be returned from blocks:
   ```
@@ -59,13 +58,13 @@ See the test directory for some sample programs.
   Note how expression lists follow the same rules as other multiple-return expressions like a function call or varargs (`...`):
   If it is last in an expression list, it returns multiple values, otherwise it returns only one value.
 
-  In addition to making blocks expressions, loops are also expressions.
-  Loops evaluate to nil by default. When breaking from a loop, the break statement can supply a value to return.
+  Loops evaluate to true by default, like loops. When breaking from a loop, the break statement can supply a value to return.
+  Returning a non-true value from a loop can be used to detect when break was used in the loop.
   ```
-  a = ? ~ -> () --> a=nil
-  b = ? 1 -> (^^^) --> b=nil
+  a = ? ~ -> () --> a=true
+  b = ? 1 -> (^^^) --> b=true
   c = ? 1 -> (^^^7) --> c=7
-  d = ?? [k,v] pairs(t) -> (^^^v) --> d = v or, if t is empty, nil
+  d = ?? [k,v] pairs(t) -> (^^^v) --> d = v or, if t is empty, true
   e = ?? i=1,10 -> (print(i)) --> e = nil
   ```
 

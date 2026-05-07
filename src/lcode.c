@@ -655,6 +655,7 @@ static void codenot (FuncState *fs, expdesc *e) {
       invertjump(fs, e);
       break;
     }
+    case VBLOCK: // add vblock to handle blocks in bool expressions
     case VRELOCABLE:
     case VNONRELOC: {
       discharge2anyreg(fs, e);

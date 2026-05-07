@@ -1151,7 +1151,9 @@ static void breakstat (LexState *ls) {
     // close now so the nil value does not overwrite an upvalue-captured local variable
     if (upval)
       luaK_codeABC(fs, OP_CLOSE, bl->freereg, 0, 0);
-    luaK_nil(fs, bl->freereg, 1);
+    // load true by default instead of nil
+    luaK_codeABC(fs, OP_LOADBOOL, bl->freereg, 1, 0);
+    // luaK_nil(fs, bl->freereg, 1);
   } else {
     expdesc r; // returned expression
     expr(ls, &r);
@@ -1193,7 +1195,8 @@ static void whileexpr (LexState *ls, int line, expdesc *e) {
   // check_match(ls, TK_END, TK_WHILE, line);
   check_match(ls, ')', '(', line);
   luaK_patchtohere(fs, condexit);  /* false conditions finish the loop */
-  if (e != NULL) luaK_nil(fs, bl.freereg, 1); // load default nil return value
+  // if (e != NULL) luaK_nil(fs, bl.freereg, 1); // load default return value
+  luaK_codeABC(fs, OP_LOADBOOL, bl.freereg, 1, 0);
   leaveblock(fs, e); // all breaks will patch to here, after the loadnil
 }
 
@@ -1318,7 +1321,9 @@ static void forexpr(LexState *ls, int line, expdesc *e) {
     default: luaX_syntaxerror(ls, INLUA_QL("[varlist]") " or " INLUA_QL("name=start,stop") " expected");
   }
   // check_match(ls, TK_END, TK_FOR, line);
-  if (e != NULL) luaK_nil(fs, bl.freereg, 1); // load default nil return value
+  // if (e != NULL) luaK_nil(fs, bl.freereg, 1); // load default return value
+  luaK_codeABC(fs, OP_LOADBOOL, bl.freereg, 1, 0);
+  // init_exp(e, VTRUE, 0);
   leaveblock(fs, e);  /* loop scope (`break' jumps to this point) */
 }
 
@@ -1475,15 +1480,17 @@ static void retstat (LexState *ls) {
 
 static int statement (LexState *ls) {
   // int line = ls->linenumber;  /* may be needed for error messages */
+
+  // NOTE: removed loops from statement, loops are always parsed in exprstat as an expression
   switch (ls->t.token) {
     // case TK_IF: {  /* stat -> ifstat */
     //   ifstat(ls, line);
     //   return 0;
     // }
-    case '?': {  /* stat -> whileexpr */
-      whileexpr(ls, ls->linenumber, NULL);
-      return 0;
-    }
+    // case '?': {  /* stat -> whileexpr */
+    //   whileexpr(ls, ls->linenumber, NULL);
+    //   return 0;
+    // }
     // case TK_DO: {  /* stat -> DO block END */
     // NOTE: block is now an expression
     // case '(': { /* stat -> (block) */
@@ -1492,10 +1499,10 @@ static int statement (LexState *ls) {
     //   check_match(ls, ')', '(', line);
     //   return 0;
     // }
-    case TK_FOR: {  /* stat -> forstat */
-      forexpr(ls, ls->linenumber, NULL);
-      return 0;
-    }
+    // case TK_FOR: {  /* stat -> forstat */
+    //   forexpr(ls, ls->linenumber, NULL);
+    //   return 0;
+    // }
     // case TK_REPEAT: {  /* stat -> repeatstat */
     //   repeatstat(ls, line);
     //   return 0;
