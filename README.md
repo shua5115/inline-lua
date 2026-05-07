@@ -23,7 +23,7 @@ See the test directory for some sample programs.
   |`{ [<expression>]=value }`|`{ .(<expression>)=value }`|
   |`return <explist>`|`^^ <explist>`|
   |`break`|`^^^`|
-  |(is illegal)|`^^^ <expression>`<br>Break from a loop with a value. Loops are nil by default.|
+  |(is illegal)|`^^^ <expression>`<br>Break from a loop with a value.|
   |`do <block> end`|`(<block>)`|
   |`while <cond> do <body> end`|`? <cond> -> (<body>)`|
   |`for var=start,stop,<step> do <body> end`|`?? var=start,stop,<step> -> (body)`|
