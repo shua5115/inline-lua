@@ -58,7 +58,7 @@ See the test directory for some sample programs.
   Note how expression lists follow the same rules as other multiple-return expressions like a function call or varargs (`...`):
   If it is last in an expression list, it returns multiple values, otherwise it returns only one value.
 
-  Loops evaluate to true by default, like loops. When breaking from a loop, the break statement can supply a value to return.
+  Loops evaluate to true by default, like blocks. When breaking from a loop, the break statement can supply a value to return.
   Returning a non-true value from a loop can be used to detect when break was used in the loop.
   ```
   a = ? ~ -> () --> a=true
