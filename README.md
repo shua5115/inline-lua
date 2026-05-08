@@ -65,7 +65,7 @@ See the test directory for some sample programs.
   b = ? 1 -> (^^^) --> b=true
   c = ? 1 -> (^^^7) --> c=7
   d = ?? [k,v] pairs(t) -> (^^^v) --> d = v or, if t is empty, true
-  e = ?? i=1,10 -> (print(i)) --> e = nil
+  e = ?? i=1,10 -> (print(i)) --> e = true
   ```
 
   ### Additions to Standard Library
